@@ -1,6 +1,6 @@
 /* Inflate deflated data
 
-   Copyright (C) 1997-1999, 2002, 2006, 2009-2010 Free Software Foundation,
+   Copyright (C) 1997-1999, 2002, 2006, 2009-2012 Free Software Foundation,
    Inc.
 
    This program is free software; you can redistribute it and/or modify
@@ -141,15 +141,7 @@ struct huft {
 
 
 /* Function prototypes */
-int huft_build OF((unsigned *, unsigned, unsigned, ush *, ush *,
-                   struct huft **, int *));
-int huft_free OF((struct huft *));
-int inflate_codes OF((struct huft *, struct huft *, int, int));
-int inflate_stored OF((void));
-int inflate_fixed OF((void));
-int inflate_dynamic OF((void));
-int inflate_block OF((int *));
-int inflate OF((void));
+static int huft_free (struct huft *);
 
 
 /* The inflate algorithm uses a sliding 32K byte window on the uncompressed
@@ -216,10 +208,10 @@ static ush cpdext[] = {         /* Extra bits for distance codes */
    the stream.
  */
 
-ulg bb;                         /* bit buffer */
-unsigned bk;                    /* bits in bit buffer */
+static ulg bb;                         /* bit buffer */
+static unsigned bk;                    /* bits in bit buffer */
 
-ush mask_bits[] = {
+static ush mask_bits[] = {
     0x0000,
     0x0001, 0x0003, 0x0007, 0x000f, 0x001f, 0x003f, 0x007f, 0x00ff,
     0x01ff, 0x03ff, 0x07ff, 0x0fff, 0x1fff, 0x3fff, 0x7fff, 0xffff
@@ -271,8 +263,8 @@ ush mask_bits[] = {
  */
 
 
-int lbits = 9;          /* bits in base literal/length lookup table */
-int dbits = 6;          /* bits in base distance lookup table */
+static int lbits = 9;   /* bits in base literal/length lookup table */
+static int dbits = 6;   /* bits in base distance lookup table */
 
 
 /* If BMAX needs to be larger than 16, then h and x[] should be ulg. */
@@ -280,17 +272,19 @@ int dbits = 6;          /* bits in base distance lookup table */
 #define N_MAX 288       /* maximum number of codes in any set */
 
 
-unsigned hufts;         /* track memory usage */
+static unsigned hufts;  /* track memory usage */
 
 
-int huft_build(b, n, s, d, e, t, m)
-unsigned *b;            /* code lengths in bits (all assumed <= BMAX) */
-unsigned n;             /* number of codes (assumed <= N_MAX) */
-unsigned s;             /* number of simple-valued codes (0..s-1) */
-ush *d;                 /* list of base values for non-simple codes */
-ush *e;                 /* list of extra bits for non-simple codes */
-struct huft **t;        /* result: starting table */
-int *m;                 /* maximum lookup bits, returns actual */
+static int
+huft_build(
+unsigned *b,            /* code lengths in bits (all assumed <= BMAX) */
+unsigned n,             /* number of codes (assumed <= N_MAX) */
+unsigned s,             /* number of simple-valued codes (0..s-1) */
+ush *d,                 /* list of base values for non-simple codes */
+ush *e,                 /* list of extra bits for non-simple codes */
+struct huft **t,        /* result: starting table */
+int *m                  /* maximum lookup bits, returns actual */
+           )
 /* Given a list of code lengths and a maximum table size, make a set of
    tables to decode that set of codes.  Return zero on success, one if
    the given code set is incomplete (the tables are still built in this
@@ -323,7 +317,7 @@ int *m;                 /* maximum lookup bits, returns actual */
   p = b;  i = n;
   do {
     Tracecv(*p, (stderr, (n-i >= ' ' && n-i <= '~' ? "%c %d\n" : "0x%x %d\n"),
-	    n-i, *p));
+            n-i, *p));
     c[*p]++;                    /* assume all entries <= BMAX */
     p++;                      /* Can't combine with above line (Solaris bug) */
   } while (--i);
@@ -415,13 +409,13 @@ int *m;                 /* maximum lookup bits, returns actual */
         {                       /* too few codes for k-w bit table */
           f -= a + 1;           /* deduct codes from patterns left */
           xp = c + k;
-	  if (j < z)
-	    while (++j < z)       /* try smaller tables up to z bits */
-	    {
-	      if ((f <<= 1) <= *++xp)
-		break;            /* enough codes to use up j bits */
-	      f -= *xp;           /* else deduct codes from patterns */
-	    }
+          if (j < z)
+            while (++j < z)       /* try smaller tables up to z bits */
+            {
+              if ((f <<= 1) <= *++xp)
+                break;            /* enough codes to use up j bits */
+              f -= *xp;           /* else deduct codes from patterns */
+            }
         }
         z = 1 << j;             /* table entries for j-bit table */
 
@@ -458,7 +452,7 @@ int *m;                 /* maximum lookup bits, returns actual */
       {
         r.e = (uch)(*p < 256 ? 16 : 15);    /* 256 is end-of-block code */
         r.v.n = (ush)(*p);             /* simple code is just the value */
-	p++;                           /* one compiler does not like *p++ */
+        p++;                           /* one compiler does not like *p++ */
       }
       else
       {
@@ -492,11 +486,11 @@ int *m;                 /* maximum lookup bits, returns actual */
 
 
 
-int huft_free(t)
-struct huft *t;         /* table to free */
-/* Free the malloc'ed tables built by huft_build(), which makes a linked
+/* Free the malloc'ed tables T built by huft_build(), which makes a linked
    list of the tables it made, with the links in a dummy first entry of
    each table. */
+static int
+huft_free(struct huft *t)
 {
   register struct huft *p, *q;
 
@@ -513,11 +507,12 @@ struct huft *t;         /* table to free */
 }
 
 
-int inflate_codes(tl, td, bl, bd)
-struct huft *tl, *td;   /* literal/length and distance decoder tables */
-int bl, bd;             /* number of bits decoded by tl[] and td[] */
+/* tl, td:   literal/length and distance decoder tables */
+/* bl, bd:   number of bits decoded by tl[] and td[] */
 /* inflate (decompress) the codes in a deflated (compressed) block.
    Return an error code or zero if it all goes ok. */
+static int
+inflate_codes(struct huft *tl, struct huft *td, int bl, int bd)
 {
   register unsigned e;  /* table entry flag/number of extra bits */
   unsigned n, d;        /* length and index for copy */
@@ -588,19 +583,18 @@ int bl, bd;             /* number of bits decoded by tl[] and td[] */
       /* do the copy */
       do {
         n -= (e = (e = WSIZE - ((d &= WSIZE-1) > w ? d : w)) > n ? n : e);
-#if !defined(NOMEMCPY) && !defined(DEBUG)
-        unsigned int delta = w > d ? w - d : d - w;
-        if (delta >= e)
+#ifndef DEBUG
+        if (e <= (d < w ? w - d : d - w))
         {
           memcpy(slide + w, slide + d, e);
           w += e;
           d += e;
         }
         else                      /* do it slow to avoid memcpy() overlap */
-#endif /* !NOMEMCPY */
+#endif
           do {
             slide[w++] = slide[d++];
-	    Tracevv((stderr, "%c", slide[w-1]));
+            Tracevv((stderr, "%c", slide[w-1]));
           } while (--e);
         if (w == WSIZE)
         {
@@ -623,8 +617,9 @@ int bl, bd;             /* number of bits decoded by tl[] and td[] */
 
 
 
-int inflate_stored()
 /* "decompress" an inflated type 0 (stored) block. */
+static int
+inflate_stored(void)
 {
   unsigned n;           /* number of bytes in block */
   unsigned w;           /* current window position */
@@ -676,10 +671,11 @@ int inflate_stored()
 
 
 
-int inflate_fixed()
 /* decompress an inflated type 1 (fixed Huffman codes) block.  We should
    either replace this with a custom decoder, or at least precompute the
    Huffman tables. */
+static int
+inflate_fixed(void)
 {
   int i;                /* temporary variable */
   struct huft *tl;      /* literal/length code table */
@@ -727,8 +723,9 @@ int inflate_fixed()
 
 
 
-int inflate_dynamic()
 /* decompress an inflated type 2 (dynamic Huffman codes) block. */
+static int
+inflate_dynamic(void)
 {
   int i;                /* temporary variables */
   unsigned j;
@@ -797,7 +794,7 @@ int inflate_dynamic()
   }
 
   if (tl == NULL)		/* Grrrhhh */
-	return 2;
+        return 2;
 
   /* read in literal and distance code lengths */
   n = nl + nd;
@@ -896,9 +893,9 @@ int inflate_dynamic()
 
 
 
-int inflate_block(e)
-int *e;                 /* last block flag */
 /* decompress an inflated block */
+/* E is the last block flag */
+static int inflate_block(int *e)
 {
   unsigned t;           /* block type */
   unsigned w;           /* current window position */
@@ -944,7 +941,8 @@ int *e;                 /* last block flag */
 
 
 
-int inflate()
+int
+inflate(void)
 /* decompress an inflated entry */
 {
   int e;                /* last block flag */

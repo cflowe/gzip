@@ -1,6 +1,6 @@
 /* zip.c -- compress files to the gzip or pkzip format
 
-   Copyright (C) 1997-1999, 2006-2007, 2009-2010 Free Software Foundation, Inc.
+   Copyright (C) 1997-1999, 2006-2007, 2009-2012 Free Software Foundation, Inc.
    Copyright (C) 1992-1993 Jean-loup Gailly
 
    This program is free software; you can redistribute it and/or modify
@@ -22,7 +22,6 @@
 
 #include "tailor.h"
 #include "gzip.h"
-#include "crypt.h"
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -55,12 +54,12 @@ int zip(in, out)
     put_byte(DEFLATED);      /* compression method */
 
     if (save_orig_name) {
-	flags |= ORIG_NAME;
+        flags |= ORIG_NAME;
     }
     put_byte(flags);         /* general flags */
     stamp = (0 <= time_stamp.tv_sec && time_stamp.tv_sec <= 0xffffffff
-	     ? (ulg) time_stamp.tv_sec
-	     : (ulg) 0);
+             ? (ulg) time_stamp.tv_sec
+             : (ulg) 0);
     put_long (stamp);
 
     /* Write deflated file to zip file */
@@ -74,29 +73,29 @@ int zip(in, out)
     put_byte(OS_CODE);            /* OS identifier */
 
     if (save_orig_name) {
-	char *p = gzip_base_name (ifname); /* Don't save the directory part. */
-	do {
-	    put_char(*p);
-	} while (*p++);
+        char *p = gzip_base_name (ifname); /* Don't save the directory part. */
+        do {
+            put_byte (*p);
+        } while (*p++);
     }
     header_bytes = (off_t)outcnt;
 
     (void)deflate();
 
-#if !defined(NO_SIZE_CHECK) && !defined(RECORD_IO)
+#ifndef NO_SIZE_CHECK
   /* Check input size (but not in VMS -- variable record lengths mess it up)
    * and not on MSDOS -- diet in TSR mode reports an incorrect file size)
    */
     if (ifile_size != -1L && bytes_in != ifile_size) {
-	fprintf(stderr, "%s: %s: file size changed while zipping\n",
-		program_name, ifname);
+        fprintf(stderr, "%s: %s: file size changed while zipping\n",
+                program_name, ifname);
     }
 #endif
 
     /* Write the crc and uncompressed size */
     put_long(crc);
     put_long((ulg)bytes_in);
-    header_bytes += 2*sizeof(long);
+    header_bytes += 2*4;
 
     flush_outbuf();
     return OK;
@@ -119,8 +118,8 @@ int file_read(buf, size)
     len = read_buffer (ifd, buf, size);
     if (len == 0) return (int)len;
     if (len == (unsigned)-1) {
-	read_error();
-	return EOF;
+        read_error();
+        return EOF;
     }
 
     crc = updcrc((uch*)buf, len);

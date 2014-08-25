@@ -1,6 +1,6 @@
 /* gzip.h -- common declarations for all gzip modules
 
-   Copyright (C) 1997-1999, 2001, 2006-2007, 2009-2010 Free Software
+   Copyright (C) 1997-1999, 2001, 2006-2007, 2009-2012 Free Software
    Foundation, Inc.
 
    Copyright (C) 1992-1993 Jean-loup Gailly.
@@ -18,12 +18,6 @@
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
-
-#if defined(__STDC__) || defined(PROTO)
-#  define OF(args)  args
-#else
-#  define OF(args)  ()
-#endif
 
 #ifdef __STDC__
    typedef void *voidp;
@@ -172,7 +166,7 @@ typedef int file_t;     /* Do not use stdio */
 
 /* gzip flag byte */
 #define ASCII_FLAG   0x01 /* bit 0 set: file probably ascii text */
-#define CONTINUATION 0x02 /* bit 1 set: continuation of multi-part gzip file */
+#define HEADER_CRC   0x02 /* bit 1 set: CRC16 for the gzip header */
 #define EXTRA_FIELD  0x04 /* bit 2 set: extra field present */
 #define ORIG_NAME    0x08 /* bit 3 set: original file name present */
 #define COMMENT      0x10 /* bit 4 set: file comment present */
@@ -202,7 +196,6 @@ typedef int file_t;     /* Do not use stdio */
  * distances are limited to MAX_DIST instead of WSIZE.
  */
 
-extern int decrypt;        /* flag to turn on decryption */
 extern int exit_code;      /* program exit code */
 extern int verbose;        /* be verbose (-v) */
 extern int quiet;          /* be quiet (-q) */
@@ -268,66 +261,66 @@ extern int save_orig_name; /* set if original name must be saved */
 #endif
 
 #define WARN(msg) {if (!quiet) fprintf msg ; \
-		   if (exit_code == OK) exit_code = WARNING;}
+                   if (exit_code == OK) exit_code = WARNING;}
 
-	/* in zip.c: */
-extern int zip        OF((int in, int out));
-extern int file_read  OF((char *buf,  unsigned size));
+        /* in zip.c: */
+extern int zip        (int in, int out);
+extern int file_read  (char *buf,  unsigned size);
 
-	/* in unzip.c */
-extern int unzip      OF((int in, int out));
-extern int check_zipfile OF((int in));
+        /* in unzip.c */
+extern int unzip      (int in, int out);
+extern int check_zipfile (int in);
 
-	/* in unpack.c */
-extern int unpack     OF((int in, int out));
+        /* in unpack.c */
+extern int unpack     (int in, int out);
 
-	/* in unlzh.c */
-extern int unlzh      OF((int in, int out));
+        /* in unlzh.c */
+extern int unlzh      (int in, int out);
 
-	/* in gzip.c */
-void abort_gzip OF((void)) ATTRIBUTE_NORETURN;
+        /* in gzip.c */
+extern void abort_gzip (void) ATTRIBUTE_NORETURN;
 
         /* in deflate.c */
-void lm_init OF((int pack_level, ush *flags));
-off_t deflate OF((void));
+extern void lm_init (int pack_level, ush *flags);
+extern off_t deflate (void);
 
         /* in trees.c */
-void ct_init     OF((ush *attr, int *method));
-int  ct_tally    OF((int dist, int lc));
-off_t flush_block OF((char *buf, ulg stored_len, int eof));
+extern void ct_init     (ush *attr, int *method);
+extern int  ct_tally    (int dist, int lc);
+extern off_t flush_block (char *buf, ulg stored_len, int eof);
 
         /* in bits.c */
-void     bi_init    OF((file_t zipfile));
-void     send_bits  OF((int value, int length));
-unsigned bi_reverse OF((unsigned value, int length));
-void     bi_windup  OF((void));
-void     copy_block OF((char *buf, unsigned len, int header));
-extern   int (*read_buf) OF((char *buf, unsigned size));
+extern void     bi_init    (file_t zipfile);
+extern void     send_bits  (int value, int length);
+extern unsigned bi_reverse (unsigned value, int length) _GL_ATTRIBUTE_CONST;
+extern void     bi_windup  (void);
+extern void     copy_block (char *buf, unsigned len, int header);
+extern int     (*read_buf) (char *buf, unsigned size);
 
-	/* in util.c: */
-extern int copy           OF((int in, int out));
-extern ulg  updcrc        OF((uch *s, unsigned n));
-extern void clear_bufs    OF((void));
-extern int  fill_inbuf    OF((int eof_ok));
-extern void flush_outbuf  OF((void));
-extern void flush_window  OF((void));
-extern void write_buf     OF((int fd, voidp buf, unsigned cnt));
-extern int read_buffer    OF((int fd, voidp buf, unsigned int cnt));
-extern char *strlwr       OF((char *s));
-extern char *gzip_base_name OF((char *fname));
-extern int xunlink        OF((char *fname));
-extern void make_simple_name OF((char *name));
-extern char *add_envopt   OF((int *argcp, char ***argvp, char const *env));
-extern void gzip_error    OF((char const *m)) ATTRIBUTE_NORETURN;
-extern void xalloc_die    OF((void)) ATTRIBUTE_NORETURN;
-extern void warning       OF((char const *m));
-extern void read_error    OF((void)) ATTRIBUTE_NORETURN;
-extern void write_error   OF((void)) ATTRIBUTE_NORETURN;
-extern void display_ratio OF((off_t num, off_t den, FILE *file));
-extern void fprint_off    OF((FILE *, off_t, int));
+        /* in util.c: */
+extern int copy           (int in, int out);
+extern ulg  updcrc        (uch *s, unsigned n);
+extern void clear_bufs    (void);
+extern int  fill_inbuf    (int eof_ok);
+extern void flush_outbuf  (void);
+extern void flush_window  (void);
+extern void write_buf     (int fd, voidp buf, unsigned cnt);
+extern int read_buffer    (int fd, voidp buf, unsigned int cnt);
+extern char *strlwr       (char *s);
+extern char *gzip_base_name (char *fname) _GL_ATTRIBUTE_PURE;
+extern int xunlink        (char *fname);
+extern void make_simple_name (char *name);
+extern char *add_envopt   (int *argcp, char ***argvp, char const *env);
+extern void gzip_error    (char const *m) ATTRIBUTE_NORETURN;
+extern void xalloc_die    (void) ATTRIBUTE_NORETURN;
+extern void warning       (char const *m);
+extern void read_error    (void) ATTRIBUTE_NORETURN;
+extern void write_error   (void) ATTRIBUTE_NORETURN;
+extern void display_ratio (off_t num, off_t den, FILE *file);
+extern void fprint_off    (FILE *, off_t, int);
 
-	/* in inflate.c */
-extern int inflate OF((void));
+        /* in inflate.c */
+extern int inflate (void);
 
-	/* in yesno.c */
-extern int yesno OF((void));
+        /* in yesno.c */
+extern int yesno (void);

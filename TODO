@@ -2,8 +2,9 @@ TODO file for gzip.
 
 Some of the planned features include:
 
-- Remove some of the old porting cruft, since we no longer support
-  PRIMOS etc. any more.
+- Remove some of the old porting cruft. since we no longer support
+  FIXME-2011: in mid to late 2011, remove the following directories:
+  amiga, atari, msdos, nt, os2, vms
 
 - Separate out the shell scripts like gzexe into a new little package;
   these scripts are less used and less reliable and should be optional.
@@ -72,7 +73,7 @@ Send comments to <bug-gzip@gnu.org>.
 
 ========================================================================
 
-Copyright (C) 1999, 2001, 2006, 2009-2010 Free Software Foundation, Inc.
+Copyright (C) 1999, 2001, 2006, 2009-2012 Free Software Foundation, Inc.
 Copyright (C) 1992, 1993 Jean-loup Gailly
 
 Permission is granted to copy, distribute and/or modify this document

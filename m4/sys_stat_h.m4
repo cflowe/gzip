@@ -1,5 +1,5 @@
-# sys_stat_h.m4 serial 21   -*- Autoconf -*-
-dnl Copyright (C) 2006-2010 Free Software Foundation, Inc.
+# sys_stat_h.m4 serial 27   -*- Autoconf -*-
+dnl Copyright (C) 2006-2012 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -19,6 +19,22 @@ AC_DEFUN([gl_HEADER_SYS_STAT_H],
 
   gl_CHECK_NEXT_HEADERS([sys/stat.h])
 
+  dnl Ensure the type mode_t gets defined.
+  AC_REQUIRE([AC_TYPE_MODE_T])
+
+  dnl Whether to override 'struct stat'.
+  m4_ifdef([gl_LARGEFILE], [
+    AC_REQUIRE([gl_LARGEFILE])
+  ], [
+    WINDOWS_64_BIT_ST_SIZE=0
+  ])
+  AC_SUBST([WINDOWS_64_BIT_ST_SIZE])
+  if test $WINDOWS_64_BIT_ST_SIZE = 1; then
+    AC_DEFINE([_GL_WINDOWS_64_BIT_ST_SIZE], [1],
+      [Define to 1 if Gnulib overrides 'struct stat' on Windows so that
+       struct stat.st_size becomes 64-bit.])
+  fi
+
   dnl Define types that are supposed to be defined in <sys/types.h> or
   dnl <sys/stat.h>.
   AC_CHECK_TYPE([nlink_t], [],
@@ -27,19 +43,27 @@ AC_DEFUN([gl_HEADER_SYS_STAT_H],
     [#include <sys/types.h>
      #include <sys/stat.h>])
 
+  dnl Check for declarations of anything we want to poison if the
+  dnl corresponding gnulib module is not in use.
+  gl_WARN_ON_USE_PREPARE([[#include <sys/stat.h>
+    ]], [fchmodat fstat fstatat futimens lchmod lstat mkdirat mkfifo mkfifoat
+    mknod mknodat stat utimensat])
 ]) # gl_HEADER_SYS_STAT_H
 
 AC_DEFUN([gl_SYS_STAT_MODULE_INDICATOR],
 [
   dnl Use AC_REQUIRE here, so that the default settings are expanded once only.
   AC_REQUIRE([gl_SYS_STAT_H_DEFAULTS])
-  GNULIB_[]m4_translit([$1],[abcdefghijklmnopqrstuvwxyz./-],[ABCDEFGHIJKLMNOPQRSTUVWXYZ___])=1
+  gl_MODULE_INDICATOR_SET_VARIABLE([$1])
+  dnl Define it also as a C macro, for the benefit of the unit tests.
+  gl_MODULE_INDICATOR_FOR_TESTS([$1])
 ])
 
 AC_DEFUN([gl_SYS_STAT_H_DEFAULTS],
 [
   AC_REQUIRE([gl_UNISTD_H_DEFAULTS]) dnl for REPLACE_FCHDIR
   GNULIB_FCHMODAT=0;    AC_SUBST([GNULIB_FCHMODAT])
+  GNULIB_FSTAT=0;       AC_SUBST([GNULIB_FSTAT])
   GNULIB_FSTATAT=0;     AC_SUBST([GNULIB_FSTATAT])
   GNULIB_FUTIMENS=0;    AC_SUBST([GNULIB_FUTIMENS])
   GNULIB_LCHMOD=0;      AC_SUBST([GNULIB_LCHMOD])

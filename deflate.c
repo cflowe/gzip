@@ -1,6 +1,6 @@
 /* deflate.c -- compress data using the deflation algorithm
 
-   Copyright (C) 1999, 2006, 2009-2010 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2006, 2009-2012 Free Software Foundation, Inc.
    Copyright (C) 1992-1993 Jean-loup Gailly
 
    This program is free software; you can redistribute it and/or modify
@@ -161,7 +161,7 @@ typedef unsigned IPos;
 /* DECLARE(Pos, head, 1<<HASH_BITS); */
 /* Heads of the hash chains or NIL. */
 
-ulg window_size = (ulg)2*WSIZE;
+static ulg window_size = (ulg)2*WSIZE;
 /* window size, 2*WSIZE except for MMAP or BIG_MEM, where it is the
  * input file length plus MIN_LOOKAHEAD.
  */
@@ -180,7 +180,7 @@ local unsigned ins_h;  /* hash index of string to be inserted */
  *   H_SHIFT * MIN_MATCH >= HASH_BITS
  */
 
-unsigned int near prev_length;
+       unsigned int near prev_length;
 /* Length of the best match at previous step. Matches not greater than this
  * are discarded. This is used in the lazy match evaluation.
  */
@@ -190,7 +190,7 @@ unsigned int near prev_length;
 local int           eofile;        /* flag set at end of input file */
 local unsigned      lookahead;     /* number of valid bytes ahead in window */
 
-unsigned near max_chain_length;
+       unsigned max_chain_length;
 /* To speed up deflation, hash chains are never searched beyond this length.
  * A higher limit improves compression ratio but degrades the speed.
  */
@@ -209,7 +209,7 @@ local unsigned int max_lazy_match;
 local int compr_level;
 /* compression level (1..9) */
 
-unsigned near good_match;
+unsigned good_match;
 /* Use a faster search when the previous match is longer than this */
 
 
@@ -226,10 +226,17 @@ typedef struct config {
    ush max_chain;
 } config;
 
+#ifdef ASMV
+# define static_unless_ASMV
+#else
+# define static_unless_ASMV static
+#endif
+
 #ifdef  FULL_SEARCH
 # define nice_match MAX_MATCH
 #else
-  int near nice_match; /* Stop searching when current match exceeds this */
+  /* Stop searching when current match exceeds this */
+  static_unless_ASMV int nice_match;
 #endif
 
 local config configuration_table[10] = {
@@ -254,21 +261,21 @@ local config configuration_table[10] = {
 /* ===========================================================================
  *  Prototypes for local functions.
  */
-local void fill_window   OF((void));
-local off_t deflate_fast OF((void));
+local void fill_window   (void);
+local off_t deflate_fast (void);
 
-      int  longest_match OF((IPos cur_match));
 #ifdef ASMV
-      void match_init OF((void)); /* asm code initialization */
+      int  longest_match (IPos cur_match);
+      void match_init (void); /* asm code initialization */
 #endif
 
 #ifdef DEBUG
-local  void check_match OF((IPos start, IPos match, int length));
+local  void check_match (IPos start, IPos match, int length);
 #endif
 
 /* ===========================================================================
  * Update a hash value with the given input byte
- * IN  assertion: all calls to to UPDATE_HASH are made with consecutive
+ * IN  assertion: all calls to UPDATE_HASH are made with consecutive
  *    input characters, so that a running hash key can be computed from the
  *    previous key instead of complete recalculation each time.
  */
@@ -278,7 +285,7 @@ local  void check_match OF((IPos start, IPos match, int length));
  * Insert string s in the dictionary and set match_head to the previous head
  * of the hash chain (the most recent string with same hash key). Return
  * the previous length of the hash chain.
- * IN  assertion: all calls to to INSERT_STRING are made with consecutive
+ * IN  assertion: all calls to INSERT_STRING are made with consecutive
  *    input characters and the first MIN_MATCH bytes of s are valid
  *    (except for the last MIN_MATCH-1 bytes of the input file).
  */
@@ -329,7 +336,7 @@ void lm_init (pack_level, flags)
 #endif
 
     lookahead = read_buf((char*)window,
-			 sizeof(int) <= 2 ? (unsigned)WSIZE : 2*WSIZE);
+                         sizeof(int) <= 2 ? (unsigned)WSIZE : 2*WSIZE);
 
     if (lookahead == 0 || lookahead == (unsigned)EOF) {
        eofile = 1, lookahead = 0;
@@ -361,8 +368,8 @@ void lm_init (pack_level, flags)
  * match.s. The code is functionally equivalent, so you can use the C version
  * if desired.
  */
-int longest_match(cur_match)
-    IPos cur_match;                             /* current match */
+static int
+longest_match(IPos cur_match)
 {
     unsigned chain_length = max_chain_length;   /* max hash chain length */
     register uch *scan = window + strstart;     /* current string */
@@ -481,7 +488,7 @@ int longest_match(cur_match)
 #endif
         }
     } while ((cur_match = prev[cur_match & WMASK]) > limit
-	     && --chain_length != 0);
+             && --chain_length != 0);
 
     return best_len;
 }
@@ -564,6 +571,8 @@ local void fill_window()
         n = read_buf((char*)window+strstart+lookahead, more);
         if (n == 0 || n == (unsigned)EOF) {
             eofile = 1;
+            /* Don't let garbage pollute the dictionary.  */
+            memzero (window + strstart + lookahead, MIN_MATCH - 1);
         } else {
             lookahead += n;
         }
@@ -601,7 +610,7 @@ local off_t deflate_fast()
          * At this point we have always match_length < MIN_MATCH
          */
         if (hash_head != NIL && strstart - hash_head <= MAX_DIST
-	    && strstart <= window_size - MIN_LOOKAHEAD) {
+            && strstart <= window_size - MIN_LOOKAHEAD) {
             /* To simplify the code, we prevent matches with the string
              * of window index 0 (in particular we have to avoid a match
              * of the string with itself at the start of the input file).
@@ -617,7 +626,7 @@ local off_t deflate_fast()
 
             lookahead -= match_length;
 
-	    /* Insert new strings in the hash table only if the match length
+            /* Insert new strings in the hash table only if the match length
              * is not too large. This saves time but degrades compression.
              */
             if (match_length <= max_insert_length) {
@@ -631,12 +640,12 @@ local off_t deflate_fast()
                      * the next lookahead bytes will be emitted as literals.
                      */
                 } while (--match_length != 0);
-	        strstart++;
+                strstart++;
             } else {
-	        strstart += match_length;
-	        match_length = 0;
-	        ins_h = window[strstart];
-	        UPDATE_HASH(ins_h, window[strstart+1]);
+                strstart += match_length;
+                match_length = 0;
+                ins_h = window[strstart];
+                UPDATE_HASH(ins_h, window[strstart+1]);
 #if MIN_MATCH != 3
                 Call UPDATE_HASH() MIN_MATCH-3 more times
 #endif
@@ -646,7 +655,7 @@ local off_t deflate_fast()
             Tracevv((stderr,"%c",window[strstart]));
             flush = ct_tally (0, window[strstart]);
             lookahead--;
-	    strstart++;
+            strstart++;
         }
         if (flush) FLUSH_BLOCK(0), block_start = strstart;
 

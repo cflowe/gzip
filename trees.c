@@ -1,6 +1,6 @@
 /* trees.c -- output deflated data using Huffman coding
 
-   Copyright (C) 1997-1999, 2009-2010 Free Software Foundation, Inc.
+   Copyright (C) 1997-1999, 2009-2012 Free Software Foundation, Inc.
    Copyright (C) 1992-1993 Jean-loup Gailly
 
    This program is free software; you can redistribute it and/or modify
@@ -286,8 +286,8 @@ local off_t compressed_len; /* total bit length of compressed file */
 local off_t input_len;      /* total byte length of input file */
 /* input_len is for debugging only since we can get it by other means. */
 
-ush *file_type;        /* pointer to UNKNOWN, BINARY or ASCII */
-int *file_method;      /* pointer to DEFLATE or STORE */
+static ush *file_type;        /* pointer to UNKNOWN, BINARY or ASCII */
+static int *file_method;      /* pointer to DEFLATE or STORE */
 
 #ifdef DEBUG
 extern off_t bits_sent;  /* bit length of the compressed data */
@@ -300,17 +300,17 @@ extern unsigned near strstart; /* window offset of current string */
  * Local (static) routines in this file.
  */
 
-local void init_block     OF((void));
-local void pqdownheap     OF((ct_data near *tree, int k));
-local void gen_bitlen     OF((tree_desc near *desc));
-local void gen_codes      OF((ct_data near *tree, int max_code));
-local void build_tree     OF((tree_desc near *desc));
-local void scan_tree      OF((ct_data near *tree, int max_code));
-local void send_tree      OF((ct_data near *tree, int max_code));
-local int  build_bl_tree  OF((void));
-local void send_all_trees OF((int lcodes, int dcodes, int blcodes));
-local void compress_block OF((ct_data near *ltree, ct_data near *dtree));
-local void set_file_type  OF((void));
+local void init_block     (void);
+local void pqdownheap     (ct_data near *tree, int k);
+local void gen_bitlen     (tree_desc near *desc);
+local void gen_codes      (ct_data near *tree, int max_code);
+local void build_tree     (tree_desc near *desc);
+local void scan_tree      (ct_data near *tree, int max_code);
+local void send_tree      (ct_data near *tree, int max_code);
+local int  build_bl_tree  (void);
+local void send_all_trees (int lcodes, int dcodes, int blcodes);
+local void compress_block (ct_data near *ltree, ct_data near *dtree);
+local void set_file_type  (void);
 
 
 #ifndef DEBUG
@@ -905,8 +905,8 @@ off_t flush_block(buf, stored_len, eof)
     if (stored_len <= opt_lenb && eof && compressed_len == 0L && seekable()) {
 #endif
         /* Since LIT_BUFSIZE <= 2*WSIZE, the input data must be there: */
-	if (!buf)
-	  gzip_error ("block vanished");
+        if (!buf)
+          gzip_error ("block vanished");
 
         copy_block(buf, (unsigned)stored_len, 0); /* without header */
         compressed_len = stored_len << 3;

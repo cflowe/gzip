@@ -1,6 +1,6 @@
 /* bits.c -- output variable-length bit strings
 
-   Copyright (C) 1999, 2009-2010 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2009-2012 Free Software Foundation, Inc.
    Copyright (C) 1992-1993 Jean-loup Gailly
 
    This program is free software; you can redistribute it and/or modify
@@ -67,7 +67,6 @@
 #include <config.h>
 #include "tailor.h"
 #include "gzip.h"
-#include "crypt.h"
 
 #ifdef DEBUG
 #  include <stdio.h>
@@ -94,7 +93,7 @@ local int bi_valid;
  * are always zero.
  */
 
-int (*read_buf) OF((char *buf, unsigned size));
+int (*read_buf) (char *buf, unsigned size);
 /* Current input function. Set to mem_read for in-memory compression */
 
 #ifdef DEBUG
@@ -118,7 +117,7 @@ void bi_init (zipfile)
      * for in-memory compression.
      */
     if (zfile != NO_FILE) {
-	read_buf  = file_read;
+        read_buf  = file_read;
     }
 }
 
@@ -208,8 +207,8 @@ void copy_block(buf, len, header)
     while (len--) {
 #ifdef CRYPT
         int t;
-	if (key) zencode(*buf, t);
+        if (key) zencode(*buf, t);
 #endif
-	put_byte(*buf++);
+        put_byte(*buf++);
     }
 }

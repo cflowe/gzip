@@ -2,7 +2,7 @@
 # Before gzip-1.4, this the use of memcpy in inflate_codes could
 # mistakenly operate on overlapping regions.  Exercise that code.
 
-# Copyright (C) 2010 Free Software Foundation, Inc.
+# Copyright (C) 2010-2012 Free Software Foundation, Inc.
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,17 +18,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # limit so don't run it by default.
 
-if test "$VERBOSE" = yes; then
-  set -x
-  gzip --version
-fi
-
-: ${srcdir=.}
-. "$srcdir/tests/init.sh"; path_prepend_ .
+. "${srcdir=.}/init.sh"; path_prepend_ ..
 
 # The input must be larger than 32KiB and slightly
 # less uniform than e.g., all zeros.
-printf wxy%032767d 0 | tee in | gzip > in.gz || framework_failure
+printf wxy%032767d 0 | tee in | gzip > in.gz || framework_failure_
 
 fail=0
 

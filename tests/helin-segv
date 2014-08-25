@@ -1,7 +1,7 @@
 #!/bin/sh
 # Before gzip-1.4, gzip -d would segfault on some inputs.
 
-# Copyright (C) 2010 Free Software Foundation, Inc.
+# Copyright (C) 2010-2012 Free Software Foundation, Inc.
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,21 +17,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # limit so don't run it by default.
 
-if test "$VERBOSE" = yes; then
-  set -x
-  gzip --version
-fi
-
-: ${srcdir=.}
-. "$srcdir/tests/init.sh"; path_prepend_ .
+. "${srcdir=.}/init.sh"; path_prepend_ ..
 
 # This test case was provided by Aki Helin.
-printf '\037\235\220\0\0\0\304' > helin.gz || framework_failure
-printf '\0\0' > exp || framework_failure
+printf '\037\235\220\0\0\0\304' > helin.gz || framework_failure_
+printf '\0\0' > exp || framework_failure_
 
 fail=0
 
 gzip -dc helin.gz > out || fail=1
-compare out exp || fail=1
+compare exp out || fail=1
 
 Exit $fail

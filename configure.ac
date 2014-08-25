@@ -1,6 +1,6 @@
 # Configure template for gzip.
 
-# Copyright (C) 1999-2002, 2006-2007, 2009-2010 Free Software Foundation, Inc.
+# Copyright (C) 1999-2002, 2006-2007, 2009-2012 Free Software Foundation, Inc.
 
 # Copyright (C) 1992-1993 Jean-loup Gailly
 
@@ -21,8 +21,8 @@
 
 AC_PREREQ([2.60])
 AC_INIT([gzip],
-	m4_esyscmd([build-aux/git-version-gen .tarball-version]),
-	[bug-gzip@gnu.org])
+        m4_esyscmd([build-aux/git-version-gen .tarball-version]),
+        [bug-gzip@gnu.org])
 
 AC_CONFIG_SRCDIR(gzip.c)
 AC_CONFIG_AUX_DIR(build-aux)
@@ -39,7 +39,6 @@ AC_PROG_RANLIB
 AC_PROG_SHELL
 
 gl_EARLY
-AC_SYS_LARGEFILE
 
 gl_INIT
 
@@ -104,6 +103,8 @@ if test "$gl_gcc_warnings" = yes; then
   gl_WARN_ADD([-Wno-unused-parameter]) # Too many warnings for now
   gl_WARN_ADD([-Wno-overflow])         # util.c
   gl_WARN_ADD([-Wno-type-limits])      # util.c
+  gl_WARN_ADD([-Wno-format-nonliteral])
+  gl_WARN_ADD([-Wno-unsuffixed-float-constants])
 
   # In spite of excluding -Wlogical-op above, it is enabled, as of
   # gcc 4.5.0 20090517, and it provokes warnings in cat.c, dd.c, truncate.c
@@ -130,14 +131,14 @@ if test "$gl_gcc_warnings" = yes; then
 fi
 
 # cc -E produces incorrect asm files on SVR4, so postprocess it.
-ASCPPPOST="sed '/^ *#/d; s,//.*,,; s/% /%/g; s/\\. /./g'"
+ASCPPPOST="sed '/^ *\\#/d; s,//.*,,; s/% /%/g; s/\\. /./g'"
 AC_SUBST([ASCPPPOST])
 
 AC_CACHE_CHECK([for underline in external names], [gzip_cv_underline],
   [gzip_cv_underline=yes
    AC_TRY_COMPILE([int foo() {return 0;}], [],
      [$NM conftest.$OBJEXT | grep _foo >/dev/null 2>&1 ||
-	gzip_cv_underline=no])])
+        gzip_cv_underline=no])])
 ASCPPFLAGS=
 if test $gzip_cv_underline = no; then
   ASCPPFLAGS='-DNO_UNDERLINE'
@@ -154,21 +155,21 @@ AC_CACHE_CHECK([for an assembler syntax supported by this package],
    *' NO_ASM '*) ;;
    *)
      if cp $srcdir/lib/match.c _match.S &&
-	eval "$CPP $CPPFLAGS $ASCPPFLAGS _match.S > _match.i" 2>/dev/null &&
-	eval "$ASCPPPOST < _match.i > match_.s" 2>/dev/null; then
+        eval "$CPP $CPPFLAGS $ASCPPFLAGS _match.S > _match.i" &&
+        eval "$ASCPPPOST < _match.i > match_.s"; then
        if test ! -s match_.s || grep error < match_.s > /dev/null; then
-	 :
-       elif eval "$CC $CPPFLAGS $CFLAGS -c match_.s >/dev/null 2>&1" &&
-	    test -f match_.$OBJEXT; then
-	 rm -f match_.$OBJEXT
-	 gzip_cv_assembler=yes
-	 if echo 'void foo (void) {}' > conftest.c &&
-	    eval "$CC $CPPFLAGS $CFLAGS -S conftest.c >/dev/null 2>&1" &&
-	    grep '\.note\.GNU-stack' conftest.s >/dev/null 2>&1 &&
-	    eval "$CC $CPPFLAGS $CFLAGS -c -Wa,--noexecstack match_.s >/dev/null 2>&1" &&
-	    test -f match_.$OBJEXT; then
-	   gzip_cv_assembler='yes, with -Wa,--noexecstack'
-	 fi
+         :
+       elif eval "$CC $CPPFLAGS $CFLAGS -c match_.s >/dev/null" &&
+            test -f match_.$OBJEXT; then
+         rm -f match_.$OBJEXT
+         gzip_cv_assembler=yes
+         if echo 'void foo (void) {}' > conftest.c &&
+            eval "$CC $CPPFLAGS $CFLAGS -S conftest.c >/dev/null" &&
+            grep '\.note\.GNU-stack' conftest.s >/dev/null &&
+            eval "$CC $CPPFLAGS $CFLAGS -c -Wa,--noexecstack match_.s >/dev/null" &&
+            test -f match_.$OBJEXT; then
+           gzip_cv_assembler='yes, with -Wa,--noexecstack'
+         fi
        fi
      fi
      rm -f conftest* _match.i _match.S match_.s match_.$OBJEXT;;
@@ -195,5 +196,5 @@ AC_TYPE_SIGNAL
 AC_TYPE_SIZE_T
 AC_TYPE_OFF_T
 
-AC_CONFIG_FILES([Makefile doc/Makefile lib/Makefile])
+AC_CONFIG_FILES([Makefile doc/Makefile lib/Makefile tests/Makefile])
 AC_OUTPUT

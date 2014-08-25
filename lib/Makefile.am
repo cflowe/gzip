@@ -1,6 +1,6 @@
 # Make gzip/lib				-*-Makefile-*-
 
-# Copyright (C) 2006, 2009-2010 Free Software Foundation, Inc.
+# Copyright (C) 2006, 2009-2012 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,6 +16,14 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+AM_CFLAGS =
+BUILT_SOURCES =
+CLEANFILES =
+EXTRA_DIST =
+MOSTLYCLEANDIRS =
+MOSTLYCLEANFILES =
+SUFFIXES =
+noinst_LIBRARIES =
 
 include gnulib.mk
 
@@ -24,11 +32,11 @@ libgzip_a_DEPENDENCIES += $(LIBOBJS)
 AM_CFLAGS += $(WARN_CFLAGS) $(WERROR_CFLAGS)
 
 match.$(OBJEXT): match.c
-	cp $(srcdir)/match.c _match.S
-	$(CPP) $(CPPFLAGS) $(ASCPPFLAGS) _match.S > _match.i
-	$(ASCPPPOST) < _match.i > match_.s
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(ASFLAGS_config) -c match_.s
-	mv match_.$(OBJEXT) $@
-	rm -f _match.S _match.i match_.s
+	$(AM_V_GEN)cp $(srcdir)/match.c _match.S
+	$(AM_V_at)$(CPP) $(CPPFLAGS) $(ASCPPFLAGS) _match.S > _match.i
+	$(AM_V_at)$(ASCPPPOST) < _match.i > match_.s
+	$(AM_V_at)$(CC) $(CPPFLAGS) $(CFLAGS) $(ASFLAGS_config) -c match_.s
+	$(AM_V_at)mv match_.$(OBJEXT) $@
+	$(AM_V_at)rm -f _match.S _match.i match_.s
 
 MOSTLYCLEANFILES += _match.S _match.i match_.s

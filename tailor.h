@@ -1,6 +1,6 @@
 /* tailor.h -- target dependent definitions
 
-   Copyright (C) 1997-1999, 2002, 2006, 2009-2010 Free Software Foundation,
+   Copyright (C) 1997-1999, 2002, 2006, 2009-2012 Free Software Foundation,
    Inc.
    Copyright (C) 1992-1993 Jean-loup Gailly
 
@@ -39,17 +39,12 @@
      /* DJGPP version 1.09+ on MS-DOS.
       * The DJGPP 1.09 stat() function must be upgraded before gzip will
       * fully work.
-      * No need for HAVE_DIRENT_H, since <unistd.h> defines POSIX_SOURCE which
-      * implies HAVE_DIRENT_H.
       */
 #    define near
 #  else
 #    define MAXSEG_64K
 #    ifdef __TURBOC__
 #      define off_t long
-#      ifdef __BORLANDC__
-#        define HAVE_DIRENT_H
-#      endif
 #      define HAVE_UTIME_H
 #    else /* MSC */
 #      define HAVE_SYS_UTIME_H
@@ -100,12 +95,10 @@
 #  endif
 #  ifdef __EMX__
 #    define HAVE_SYS_UTIME_H
-#    define HAVE_DIRENT_H
 #    define EXPAND(argc,argv) \
        {_response(&argc, &argv); _wildcard(&argc, &argv);}
 #  endif
 #  ifdef __BORLANDC__
-#    define HAVE_DIRENT_H
 #    define HAVE_UTIME_H
 #  endif
 #  ifdef __ZTC__
@@ -162,6 +155,7 @@
 #  define PATH_SEP2 ':'
 #  define SUFFIX_SEP ';'
 #  define NO_MULTIPLE_DOTS
+#  define NO_SIZE_CHECK
 #  define Z_SUFFIX "-gz"
 #  define RECORD_IO 1
 #  define casemap(c) tolow(c)
@@ -173,8 +167,6 @@
 #  define unlink delete
 #  ifdef VAXC
 #    include <unixio.h>
-#  else
-#    define HAVE_FCNTL_H
 #  endif
 #endif
 
@@ -184,9 +176,6 @@
 #  define OS_CODE  0x01
 #  define ASMV
 #  ifdef __GNUC__
-#    define HAVE_DIRENT_H
-#    define HAVE_FCNTL_H
-#    define HAVE_UNISTD_H
 #    define HAVE_CHOWN
 #    define HAVE_LSTAT
 #  else /* SASC */
@@ -196,7 +185,6 @@
 #    define direct dirent
      extern void _expand_args(int *argc, char ***argv);
 #    define EXPAND(argc,argv) _expand_args(&argc,&argv);
-#    undef  O_BINARY /* disable useless --ascii option */
 #  endif
 #endif
 
@@ -227,31 +215,12 @@
 #  endif
 #endif
 
-#ifdef __50SERIES /* Prime/PRIMOS */
-#  define PATH_SEP '>'
-#  define STDC_HEADERS
-#  define NO_STDIN_FSTAT
-#  define NO_SIZE_CHECK
-#  define RECORD_IO  1
-#  define casemap(c)  tolow(c) /* Force file names to lower case */
-#  define put_char(c) put_byte((c) & 0x7F)
-#  define get_char(c) ascii2pascii(get_byte())
-#  define OS_CODE  0x0F    /* temporary, subject to change */
-#  ifdef SIGTERM
-#    undef SIGTERM         /* We don't want a signal handler for SIGTERM */
-#  endif
-#endif
-
-#if defined(pyr) && !defined(NOMEMCPY) /* Pyramid */
-#  define NOMEMCPY /* problem with overlapping copies */
-#endif
-
 #ifdef TOPS20
 #  define OS_CODE  0x0a
 #endif
 
 
-	/* Common defaults */
+        /* Common defaults */
 
 #ifndef OS_CODE
 #  define OS_CODE  0x03  /* assume Unix */
@@ -306,12 +275,4 @@
 
 #ifndef OPEN
 #  define OPEN(name, flags, mode) open_safer (name, flags, mode)
-#endif
-
-#ifndef get_char
-#  define get_char() get_byte()
-#endif
-
-#ifndef put_char
-#  define put_char(c) put_byte(c)
 #endif
