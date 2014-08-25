@@ -1,10 +1,10 @@
 # Make gzip (GNU zip).
 
-# Copyright (C) 1999, 2001, 2002, 2006, 2007 Free Software Foundation, Inc.
+# Copyright (C) 1999, 2001-2002, 2006-2007, 2009 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
+# the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
 
 # This program is distributed in the hope that it will be useful,
@@ -24,6 +24,8 @@ man_MANS = gunzip.1 gzexe.1 gzip.1 \
   zcat.1 zcmp.1 zdiff.1 zforce.1 zgrep.1 zless.1 zmore.1 znew.1
 
 EXTRA_DIST = $(ACINCLUDE_INPUTS) $(man_MANS) \
+  ChangeLog-2007 \
+  tests/hufts-segv.gz \
   algorithm.doc amiga/match.a amiga/Makefile.gcc amiga/Makefile.sasc \
   amiga/tailor.c amiga/utime.h atari/Makefile.st crypt.h \
   gunzip.in gzexe.in gzip.doc gzip.h lzw.h msdos/match.asm msdos/tailor.c \
@@ -47,33 +49,54 @@ gzip_SOURCES = \
 gzip_LDADD = lib/libgzip.a
 
 gzip.doc: gzip.1
-	groff -man -Tascii $(srcdir)/gzip.1 | col -b | uniq >$@
+	$(AM_V_GEN)groff -man -Tascii $(srcdir)/gzip.1 | col -b | uniq > $@-t \
+	  && mv $@-t $@
 
-gzip.doc.gz: gzip.doc
-	gzip <$? >$@
+gzip.doc.gz: gzip.doc $(bin_PROGRAMS)
+	$(AM_V_GEN)./gzip < $(srcdir)/gzip.doc >$@-t && mv $@-t $@
 
 SUFFIXES = .in
 .in:
-	sed \
+	$(AM_V_GEN)sed \
 		-e 's|/bin/sh|$(SHELL)|g' \
-		-e 's|BINDIR|$${GZIP_BINDIR-'\''$(bindir)'\''}|g' \
+		-e 's|[@]bindir@|'\''$(bindir)'\''|g' \
 		-e 's|[@]VERSION@|$(VERSION)|g' \
-		$(srcdir)/$@.in >$@
-	chmod a+x $@
+		$(srcdir)/$@.in >$@-t \
+	  && chmod a+x $@-t \
+	  && mv $@-t $@
+
+# Arrange so that .tarball-version appears only in the distribution
+# tarball, and never in a checked-out repository.
+dist-hook: gen-ChangeLog
+	$(AM_V_GEN)echo $(VERSION) > $(distdir)/.tarball-version
+
+gen_start_date = 2008-01-01
+.PHONY: gen-ChangeLog
+gen-ChangeLog:
+	$(AM_V_GEN)if test -d .git; then				\
+	  $(top_srcdir)/build-aux/gitlog-to-changelog			\
+	    --since=$(gen_start_date) > $(distdir)/cl-t;		\
+	  rm -f $(distdir)/ChangeLog;					\
+	  mv $(distdir)/cl-t $(distdir)/ChangeLog;			\
+	fi
 
 # A simple test, just of gzip -- more of a sanity check than anything else.
 FILES_TO_CHECK = $(bin_SCRIPTS) $(gzip_LDADD) \
   $(top_srcdir)/ChangeLog $(top_srcdir)/configure $(top_srcdir)/gzip.c
-check-local: $(FILES_TO_CHECK) gzip.doc.gz
-	{ test '$(srcdir)' != . || GZIP_BINDIR=. ./zdiff -c gzip.doc.gz; }
-	GZIP_BINDIR=. ./zdiff -c $(srcdir)/gzip.doc $(srcdir)/gzip.doc
-	GZIP_BINDIR=. ./zdiff $(srcdir)/gzip.doc gzip.doc.gz
-	GZIP_BINDIR=. ./zdiff -c - $(srcdir)/gzip.doc <gzip.doc.gz
-	GZIP_BINDIR=. ./zdiff -c gzip.doc.gz gzip.doc.gz
-	GZIP_BINDIR=. ./zgrep -iV >/dev/null
+check-local: $(FILES_TO_CHECK) $(bin_PROGRAMS) gzip.doc.gz
+	{ test '$(srcdir)' != . || ./zdiff --__bindir . -c gzip.doc.gz; }
+	./zdiff --__bindir . -c $(srcdir)/gzip.doc $(srcdir)/gzip.doc
+	./zdiff --__bindir . $(srcdir)/gzip.doc gzip.doc.gz
+	./zdiff --__bindir . -c - $(srcdir)/gzip.doc <gzip.doc.gz
+	./zdiff --__bindir . -c gzip.doc.gz gzip.doc.gz
+	./zgrep --__bindir . -iV >/dev/null
 	for file in $(FILES_TO_CHECK); do \
-	  ./gzip -cv -- "$$file" | ./gzip -d | cmp - "$$file" || exit; \
+	  ./gzip -cv -- "$$file" | ./gzip -d | cmp - "$$file" || exit 1; \
 	done
+	./gzip -dc $(srcdir)/tests/hufts-segv.gz > /dev/null 2>&1; \
+	  test $$? = 1
+	k=in-$$$$; printf a | ./gzip > $$k && \
+	  test "`cat $$k | ./gzip -dc $$k - $$k`" = aaa && rm $$k
 	@echo 'Test succeeded.'
 
 install-exec-hook: remove-installed-links

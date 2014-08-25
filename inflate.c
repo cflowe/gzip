@@ -1,11 +1,10 @@
 /* Inflate deflated data
 
-   Copyright (C) 1997, 1998, 1999, 2002, 2006 Free Software
-   Foundation, Inc.
+   Copyright (C) 1997-1999, 2002, 2006, 2009 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
+   the Free Software Foundation; either version 3, or (at your option)
    any later version.
 
    This program is distributed in the hope that it will be useful,
@@ -114,10 +113,6 @@
       a repeat code (16, 17, or 18) to go across the boundary between
       the two sets of lengths.
  */
-
-#ifdef RCSID
-static char rcsid[] = "$Id: inflate.c,v 1.6 2006/12/20 23:30:17 eggert Exp $";
-#endif
 
 #include <config.h>
 #include "tailor.h"
@@ -335,13 +330,15 @@ int *m;                 /* maximum lookup bits, returns actual */
   } while (--i);
   if (c[0] == n)                /* null input--all zero length codes */
   {
-    q = (struct huft *) malloc (2 * sizeof *q);
+    q = (struct huft *) malloc (3 * sizeof *q);
     if (!q)
       return 3;
-    hufts += 2;
+    hufts += 3;
     q[0].v.t = (struct huft *) NULL;
     q[1].e = 99;    /* invalid code marker */
     q[1].b = 1;
+    q[2].e = 99;    /* invalid code marker */
+    q[2].b = 1;
     *t = q + 1;
     *m = 1;
     return 0;
@@ -510,7 +507,7 @@ struct huft *t;         /* table to free */
   while (p != (struct huft *)NULL)
   {
     q = (--p)->v.t;
-    free((char*)p);
+    free(p);
     p = q;
   }
   return 0;
@@ -885,15 +882,16 @@ int inflate_dynamic()
   }
 
 
-  /* decompress until an end-of-block code */
-  if (inflate_codes(tl, td, bl, bd))
-    return 1;
+  {
+    /* decompress until an end-of-block code */
+    int err = inflate_codes(tl, td, bl, bd) ? 1 : 0;
 
+    /* free the decoding tables */
+    huft_free(tl);
+    huft_free(td);
 
-  /* free the decoding tables, return */
-  huft_free(tl);
-  huft_free(td);
-  return 0;
+    return err;
+  }
 }
 
 

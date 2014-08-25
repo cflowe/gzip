@@ -1,11 +1,12 @@
 /* gzip (GNU zip) -- compress files with zip algorithm and 'compress' interface
 
-   Copyright (C) 1999, 2001, 2002, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001-2002, 2006-2007, 2009 Free Software Foundation,
+   Inc.
    Copyright (C) 1992-1993 Jean-loup Gailly
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
+   the Free Software Foundation; either version 3, or (at your option)
    any later version.
 
    This program is distributed in the hope that it will be useful,
@@ -53,10 +54,6 @@ static char  *license_msg[] = {
  * For the meaning of all compilation flags, see comments in Makefile.in.
  */
 
-#ifdef RCSID
-static char rcsid[] = "$Id: gzip.c,v 1.16 2007/03/20 05:09:51 eggert Exp $";
-#endif
-
 #include <config.h>
 #include <ctype.h>
 #include <sys/types.h>
@@ -64,6 +61,7 @@ static char rcsid[] = "$Id: gzip.c,v 1.16 2007/03/20 05:09:51 eggert Exp $";
 #include <sys/stat.h>
 #include <errno.h>
 
+#include "closein.h"
 #include "tailor.h"
 #include "gzip.h"
 #include "lzw.h"
@@ -232,6 +230,30 @@ unsigned insize;           /* valid bytes in inbuf */
 unsigned inptr;            /* index of next byte to be processed in inbuf */
 unsigned outcnt;           /* bytes in output buffer */
 
+static int handled_sig[] =
+  {
+    /* SIGINT must be first, as 'foreground' depends on it.  */
+    SIGINT
+
+#ifdef SIGHUP
+    , SIGHUP
+#endif
+#ifdef SIGPIPE
+    , SIGPIPE
+#else
+# define SIGPIPE 0
+#endif
+#ifdef SIGTERM
+    , SIGTERM
+#endif
+#ifdef SIGXCPU
+    , SIGXCPU
+#endif
+#ifdef SIGXFSZ
+    , SIGXFSZ
+#endif
+  };
+
 struct option longopts[] =
 {
  /* { name  has_arg  *flag  val } */
@@ -392,6 +414,8 @@ int main (argc, argv)
 
     program_name = gzip_base_name (argv[0]);
     proglen = strlen (program_name);
+
+    atexit (close_stdin);
 
     /* Suppress .exe for MSDOS, OS/2 and VMS: */
     if (4 < proglen && strequ (program_name + proglen - 4, ".exe"))
@@ -626,6 +650,7 @@ local void treat_stdin()
     clear_bufs(); /* clear input and output buffers */
     to_stdout = 1;
     part_nb = 0;
+    ifd = fileno(stdin);
 
     if (decompress) {
 	method = get_method(ifd);
@@ -1165,7 +1190,7 @@ local int make_ofname()
 	}
         /* ofname might be changed later if infile contains an original name */
 
-    } else if (suff != NULL) {
+    } else if (suff && ! force) {
 	/* Avoid annoying messages with -r (see treat_dir()) */
 	if (verbose || (!recursive && !quiet)) {
 	    /* Don't use WARN, as it affects exit status.  */
@@ -1273,7 +1298,7 @@ local int get_method(in)
 	}
 	if ((flags & CONTINUATION) != 0) {
 	    fprintf(stderr,
-		    "%s: %s is a a multi-part gzip file -- not supported\n",
+		    "%s: %s is a multi-part gzip file -- not supported\n",
 		    program_name, ifname);
 	    exit_code = ERROR;
 	    if (force <= 1) return -1;
@@ -1637,7 +1662,7 @@ local void copy_stat(ifstat)
 	}
       }
 
-    if (futimens (ofd, ofname, timespec) != 0)
+    if (gl_futimens (ofd, ofname, timespec) != 0)
       {
 	int e = errno;
 	WARN ((stderr, "%s: ", program_name));
@@ -1755,30 +1780,7 @@ local void treat_dir (fd, dir)
 static void
 install_signal_handlers ()
 {
-  static int sig[] =
-    {
-      /* SIGINT must be first, as 'foreground' depends on it.  */
-      SIGINT
-
-#ifdef SIGHUP
-      , SIGHUP
-#endif
-#ifdef SIGPIPE
-      , SIGPIPE
-#else
-# define SIGPIPE 0
-#endif
-#ifdef SIGTERM
-      , SIGTERM
-#endif
-#ifdef SIGXCPU
-      , SIGXCPU
-#endif
-#ifdef SIGXFSZ
-      , SIGXFSZ
-#endif
-    };
-  int nsigs = sizeof sig / sizeof sig[0];
+  int nsigs = sizeof handled_sig / sizeof handled_sig[0];
   int i;
 
 #if SA_NOCLDSTOP
@@ -1787,9 +1789,9 @@ install_signal_handlers ()
   sigemptyset (&caught_signals);
   for (i = 0; i < nsigs; i++)
     {
-      sigaction (sig[i], NULL, &act);
+      sigaction (handled_sig[i], NULL, &act);
       if (act.sa_handler != SIG_IGN)
-	sigaddset (&caught_signals, sig[i]);
+	sigaddset (&caught_signals, handled_sig[i]);
     }
 
   act.sa_handler = abort_gzip_signal;
@@ -1797,20 +1799,20 @@ install_signal_handlers ()
   act.sa_flags = 0;
 
   for (i = 0; i < nsigs; i++)
-    if (sigismember (&caught_signals, sig[i]))
+    if (sigismember (&caught_signals, handled_sig[i]))
       {
 	if (i == 0)
 	  foreground = 1;
-	sigaction (sig[i], &act, NULL);
+	sigaction (handled_sig[i], &act, NULL);
       }
 #else
   for (i = 0; i < nsigs; i++)
-    if (signal (sig[i], SIG_IGN) != SIG_IGN)
+    if (signal (handled_sig[i], SIG_IGN) != SIG_IGN)
       {
 	if (i == 0)
 	  foreground = 1;
-	signal (sig[i], abort_gzip_signal);
-	siginterrupt (sig[i], 1);
+	signal (handled_sig[i], abort_gzip_signal);
+	siginterrupt (handled_sig[i], 1);
       }
 #endif
 }
@@ -1825,8 +1827,10 @@ local void do_exit(exitcode)
 
     if (in_exit) exit(exitcode);
     in_exit = 1;
-    if (env != NULL)  free(env),  env  = NULL;
-    if (args != NULL) free((char*)args), args = NULL;
+    free(env);
+    env  = NULL;
+    free(args);
+    args = NULL;
     FREE(inbuf);
     FREE(outbuf);
     FREE(d_buf);
