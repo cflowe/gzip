@@ -1,6 +1,6 @@
 /* deflate.c -- compress data using the deflation algorithm
 
-   Copyright (C) 1999, 2006, 2009 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2006, 2009-2010 Free Software Foundation, Inc.
    Copyright (C) 1992-1993 Jean-loup Gailly
 
    This program is free software; you can redistribute it and/or modify
@@ -251,9 +251,6 @@ local config configuration_table[10] = {
  * meaning.
  */
 
-#define EQUAL 0
-/* result of memcmp for equal strings */
-
 /* ===========================================================================
  *  Prototypes for local functions.
  */
@@ -500,7 +497,7 @@ local void check_match(start, match, length)
 {
     /* check that the match is indeed a match */
     if (memcmp((char*)window + match,
-                (char*)window + start, length) != EQUAL) {
+                (char*)window + start, length) != 0) {
         fprintf(stderr,
             " start %d, match %d, length %d\n",
             start, match, length);

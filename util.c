@@ -1,7 +1,7 @@
 /* util.c -- utility functions for gzip support
 
-   Copyright (C) 1997-1999, 2001-2002, 2006, 2009 Free Software Foundation,
-   Inc.
+   Copyright (C) 1997-1999, 2001-2002, 2006, 2009-2010 Free Software
+   Foundation, Inc.
    Copyright (C) 1992-1993 Jean-loup Gailly
 
    This program is free software; you can redistribute it and/or modify
@@ -24,21 +24,11 @@
 
 #include "tailor.h"
 
-#ifdef HAVE_LIMITS_H
-#  include <limits.h>
-#endif
-#ifdef HAVE_UNISTD_H
-#  include <unistd.h>
-#endif
-#ifdef HAVE_FCNTL_H
-#  include <fcntl.h>
-#endif
-
-#if defined STDC_HEADERS || defined HAVE_STDLIB_H
-#  include <stdlib.h>
-#else
-   extern int errno;
-#endif
+#include <limits.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <stdlib.h>
+#include <errno.h>
 
 #include "gzip.h"
 #include "crypt.h"
@@ -146,10 +136,8 @@ read_buffer (fd, buf, cnt)
      voidp buf;
      unsigned int cnt;
 {
-#ifdef SSIZE_MAX
-  if (SSIZE_MAX < cnt)
-    cnt = SSIZE_MAX;
-#endif
+  if (INT_MAX < cnt)
+    cnt = INT_MAX;
   return read (fd, buf, cnt);
 }
 
@@ -160,10 +148,8 @@ write_buffer (fd, buf, cnt)
      voidp buf;
      unsigned int cnt;
 {
-#ifdef SSIZE_MAX
-  if (SSIZE_MAX < cnt)
-    cnt = SSIZE_MAX;
-#endif
+  if (INT_MAX < cnt)
+    cnt = INT_MAX;
   return write (fd, buf, cnt);
 }
 
@@ -297,59 +283,6 @@ void make_simple_name(name)
     } while (p != name);
 }
 
-
-#if !defined HAVE_STRING_H && !defined STDC_HEADERS
-
-/* Provide missing strspn and strcspn functions. */
-
-#  ifndef __STDC__
-#    define const
-#  endif
-
-int strspn  OF((const char *s, const char *accept));
-int strcspn OF((const char *s, const char *reject));
-
-/* ========================================================================
- * Return the length of the maximum initial segment
- * of s which contains only characters in accept.
- */
-int strspn(s, accept)
-    const char *s;
-    const char *accept;
-{
-    register const char *p;
-    register const char *a;
-    register int count = 0;
-
-    for (p = s; *p != '\0'; ++p) {
-	for (a = accept; *a != '\0'; ++a) {
-	    if (*p == *a) break;
-	}
-	if (*a == '\0') return count;
-	++count;
-    }
-    return count;
-}
-
-/* ========================================================================
- * Return the length of the maximum inital segment of s
- * which contains no characters from reject.
- */
-int strcspn(s, reject)
-    const char *s;
-    const char *reject;
-{
-    register int count = 0;
-
-    while (*s != '\0') {
-	if (strchr(reject, *s++) != NULL) return count;
-	++count;
-    }
-    return count;
-}
-
-#endif
-
 /* ========================================================================
  * Add an environment variable (if any) before argv, and update argc.
  * Return the expanded environment variable to be freed later, or NULL
@@ -357,23 +290,24 @@ int strcspn(s, reject)
  */
 #define SEPARATOR	" \t"	/* separators in env variable */
 
-char *add_envopt(argcp, argvp, env)
-    int *argcp;          /* pointer to argc */
-    char ***argvp;       /* pointer to argv */
-    char *env;           /* name of environment variable */
+char *add_envopt(
+    int *argcp,          /* pointer to argc */
+    char ***argvp,       /* pointer to argv */
+    char const *envvar_name) /* name of environment variable */
 {
     char *p;             /* running pointer through env variable */
     char **oargv;        /* runs through old argv array */
     char **nargv;        /* runs through new argv array */
     int	 oargc = *argcp; /* old argc */
     int  nargc = 0;      /* number of arguments in env variable */
+    char *env_val;
 
-    env = (char*)getenv(env);
-    if (env == NULL) return NULL;
+    env_val = getenv(envvar_name);
+    if (env_val == NULL) return NULL;
 
-    env = xstrdup (env);
+    env_val = xstrdup (env_val);
 
-    for (p = env; *p; nargc++ ) {            /* move through env */
+    for (p = env_val; *p; nargc++ ) {        /* move through env_val */
 	p += strspn(p, SEPARATOR);	     /* skip leading separators */
 	if (*p == '\0') break;
 
@@ -381,7 +315,7 @@ char *add_envopt(argcp, argvp, env)
 	if (*p) *p++ = '\0';		     /* mark it */
     }
     if (nargc == 0) {
-	free(env);
+	free(env_val);
 	return NULL;
     }
     *argcp += nargc;
@@ -398,7 +332,7 @@ char *add_envopt(argcp, argvp, env)
     *(nargv++) = *(oargv++);
 
     /* Then copy the environment args */
-    for (p = env; nargc > 0; nargc--) {
+    for (p = env_val; nargc > 0; nargc--) {
 	p += strspn(p, SEPARATOR);	     /* skip separators */
 	*(nargv++) = p;			     /* store start */
 	while (*p++) ;			     /* skip over word */
@@ -407,15 +341,14 @@ char *add_envopt(argcp, argvp, env)
     /* Finally copy the old args and add a NULL (usual convention) */
     while (oargc--) *(nargv++) = *(oargv++);
     *nargv = NULL;
-    return env;
+    return env_val;
 }
 
 /* ========================================================================
  * Error handlers.
  */
 void
-gzip_error (m)
-    char *m;
+gzip_error (char const *m)
 {
     fprintf (stderr, "\n%s: %s: %s\n", program_name, ifname, m);
     abort_gzip();
@@ -428,8 +361,7 @@ xalloc_die ()
   abort_gzip ();
 }
 
-void warning (m)
-    char *m;
+void warning (char const *m)
 {
     WARN ((stderr, "%s: %s: warning: %s\n", program_name, ifname, m));
 }

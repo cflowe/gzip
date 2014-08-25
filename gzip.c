@@ -1,7 +1,7 @@
 /* gzip (GNU zip) -- compress files with zip algorithm and 'compress' interface
 
-   Copyright (C) 1999, 2001-2002, 2006-2007, 2009 Free Software Foundation,
-   Inc.
+   Copyright (C) 1999, 2001-2002, 2006-2007, 2009-2010 Free Software
+   Foundation, Inc.
    Copyright (C) 1992-1993 Jean-loup Gailly
 
    This program is free software; you can redistribute it and/or modify
@@ -28,7 +28,7 @@
  * See the file algorithm.doc for the compression algorithms and file formats.
  */
 
-static char  *license_msg[] = {
+static char const *const license_msg[] = {
 "Copyright (C) 2007 Free Software Foundation, Inc.",
 "Copyright (C) 1993 Jean-loup Gailly.",
 "This is free software.  You may redistribute copies of it under the terms of",
@@ -69,27 +69,16 @@ static char  *license_msg[] = {
 
 #include "fcntl-safer.h"
 #include "getopt.h"
+#include "ignore-value.h"
 #include "stat-time.h"
 
 		/* configuration */
 
-#ifdef HAVE_FCNTL_H
-#  include <fcntl.h>
-#endif
-
-#ifdef HAVE_LIMITS_H
-#  include <limits.h>
-#endif
-
-#ifdef HAVE_UNISTD_H
-#  include <unistd.h>
-#endif
-
-#if defined STDC_HEADERS || defined HAVE_STDLIB_H
-#  include <stdlib.h>
-#else
-   extern int errno;
-#endif
+#include <fcntl.h>
+#include <limits.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <errno.h>
 
 #ifndef NO_DIR
 # define NO_DIR 0
@@ -203,7 +192,7 @@ struct timespec time_stamp; /* original time stamp (modification time) */
 off_t ifile_size;      /* input file size, -1 for devices (debug only) */
 char *env;            /* contents of GZIP env variable */
 char **args = NULL;   /* argv pointer if GZIP env variable defined */
-char *z_suffix;       /* default suffix (can be set with --suffix) */
+char const *z_suffix; /* default suffix (can be set with --suffix) */
 size_t z_len;         /* strlen(z_suffix) */
 
 /* The set of signals that are caught.  */
@@ -327,7 +316,7 @@ try_help ()
 /* ======================================================================== */
 local void help()
 {
-    static char  *help_msg[] = {
+    static char const* const help_msg[] = {
  "Compress or uncompress FILEs (by default, compress FILES in-place).",
  "",
  "Mandatory arguments to long options are mandatory for short options too.",
@@ -368,7 +357,7 @@ local void help()
  "",
  "Report bugs to <bug-gzip@gnu.org>.",
   0};
-    char **p = help_msg;
+    char const *const *p = help_msg;
 
     printf ("Usage: %s [OPTION]... [FILE]...\n", program_name);
     while (*p) printf ("%s\n", *p++);
@@ -377,7 +366,7 @@ local void help()
 /* ======================================================================== */
 local void license()
 {
-    char **p = license_msg;
+    char const *const *p = license_msg;
 
     printf ("%s %s\n", program_name, VERSION);
     while (*p) printf ("%s\n", *p++);
@@ -391,8 +380,7 @@ local void version()
     printf ("Written by Jean-loup Gailly.\n");
 }
 
-local void progerror (string)
-    char *string;
+local void progerror (char const *string)
 {
     int e = errno;
     fprintf (stderr, "%s: ", program_name);
@@ -402,9 +390,7 @@ local void progerror (string)
 }
 
 /* ======================================================================== */
-int main (argc, argv)
-    int argc;
-    char **argv;
+int main (int argc, char **argv)
 {
     int file_count;     /* number of files to process */
     size_t proglen;     /* length of program_name */
@@ -973,13 +959,13 @@ local char *get_suffix(name)
 {
     int nlen, slen;
     char suffix[MAX_SUFFIX+3]; /* last chars of name, forced to lower case */
-    static char *known_suffixes[] =
+    static char const *known_suffixes[] =
        {NULL, ".gz", ".z", ".taz", ".tgz", "-gz", "-z", "_z",
 #ifdef MAX_EXT_CHARS
           "z",
 #endif
           NULL};
-    char **suf = known_suffixes;
+    char const **suf = known_suffixes;
 
     *suf = z_suffix;
     if (strequ(z_suffix, "z")) suf++; /* check long suffixes first */
@@ -1064,9 +1050,9 @@ open_input_file (iname, sbuf)
 {
     int ilen;  /* strlen(ifname) */
     int z_suffix_errno = 0;
-    static char *suffixes[] = {NULL, ".gz", ".z", "-z", ".Z", NULL};
-    char **suf = suffixes;
-    char *s;
+    static char const *suffixes[] = {NULL, ".gz", ".z", "-z", ".Z", NULL};
+    char const **suf = suffixes;
+    char const *s;
 #ifdef NO_MULTIPLE_DOTS
     char *dot; /* pointer to ifname extension, or NULL */
 #endif
@@ -1110,7 +1096,7 @@ open_input_file (iname, sbuf)
 
     /* Search for all suffixes */
     do {
-        char *s0 = s = *suf;
+        char const *s0 = s = *suf;
         strcpy (ifname, iname);
 #ifdef NO_MULTIPLE_DOTS
         if (*s == '.') s++;
@@ -1266,8 +1252,13 @@ local int get_method(in)
 	/* If try_byte returned EOF, magic[1] == (char) EOF.  */
     } else {
 	magic[0] = (char)get_byte();
-	magic[1] = (char)get_byte();
-	imagic1 = 0; /* avoid lint warning */
+	if (magic[0]) {
+	    magic[1] = (char)get_byte();
+	    imagic1 = 0; /* avoid lint warning */
+	} else {
+	    imagic1 = try_byte ();
+	    magic[1] = (char) imagic1;
+	}
     }
     method = -1;                 /* unknown yet */
     part_nb++;                   /* number of parts in gzip file */
@@ -1446,7 +1437,7 @@ local void do_list(ifd, method)
 {
     ulg crc;  /* original crc */
     static int first_time = 1;
-    static char* methods[MAX_METHODS] = {
+    static char const *const methods[MAX_METHODS] = {
         "store",  /* 0 */
         "compr",  /* 1 */
         "pack ",  /* 2 */
@@ -1675,10 +1666,11 @@ local void copy_stat(ifstat)
 #endif
 
 #ifndef NO_CHOWN
+    /* Copy ownership */
 # if HAVE_FCHOWN
-    fchown (ofd, ifstat->st_uid, ifstat->st_gid);  /* Copy ownership */
+    ignore_value (fchown (ofd, ifstat->st_uid, ifstat->st_gid));
 # elif HAVE_CHOWN
-    chown(ofname, ifstat->st_uid, ifstat->st_gid);  /* Copy ownership */
+    ignore_value (chown (ofname, ifstat->st_uid, ifstat->st_gid));
 # endif
 #endif
 
@@ -1712,18 +1704,11 @@ local void treat_dir (fd, dir)
     char     nbuf[MAX_PATH_LEN];
     int      len;
 
-#if HAVE_FDOPENDIR
     dirp = fdopendir (fd);
-#else
-    close (fd);
-    dirp = opendir(dir);
-#endif
 
     if (dirp == NULL) {
 	progerror(dir);
-#if HAVE_FDOPENDIR
 	close (fd);
-#endif
 	return ;
     }
     /*

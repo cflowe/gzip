@@ -1,6 +1,6 @@
-/* getpagesize emulation for systems where it cannot be done in a C macro.
+/* gettime -- get the system clock
 
-   Copyright (C) 2007 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004-2007, 2009-2010 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,25 +15,34 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-/* Written by Bruno Haible and Martin Lambers.  */
+/* Written by Paul Eggert.  */
 
 #include <config.h>
 
-/* Specification. */
-#include <unistd.h>
+#include "timespec.h"
 
-/* This implementation is only for native Win32 systems.  */
-#if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+#include <sys/time.h>
 
-# define WIN32_LEAN_AND_MEAN
-# include <windows.h>
+/* Get the system time into *TS.  */
 
-int
-getpagesize (void)
+void
+gettime (struct timespec *ts)
 {
-  SYSTEM_INFO system_info;
-  GetSystemInfo (&system_info);
-  return system_info.dwPageSize;
-}
+#if HAVE_NANOTIME
+  nanotime (ts);
+#else
+
+# if defined CLOCK_REALTIME && HAVE_CLOCK_GETTIME
+  if (clock_gettime (CLOCK_REALTIME, ts) == 0)
+    return;
+# endif
+
+  {
+    struct timeval tv;
+    gettimeofday (&tv, NULL);
+    ts->tv_sec = tv.tv_sec;
+    ts->tv_nsec = tv.tv_usec * 1000;
+  }
 
 #endif
+}

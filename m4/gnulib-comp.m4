@@ -1,7 +1,7 @@
 # -*- buffer-read-only: t -*- vi: set ro:
 # DO NOT EDIT! GENERATED AUTOMATICALLY!
 # DO NOT EDIT! GENERATED AUTOMATICALLY!
-# Copyright (C) 2002-2009 Free Software Foundation, Inc.
+# Copyright (C) 2002-2010 Free Software Foundation, Inc.
 #
 # This file is free software, distributed under the terms of the GNU
 # General Public License.  As a special exception to the GNU General
@@ -53,12 +53,22 @@ AC_DEFUN([gl_INIT],
   AC_FUNC_CALLOC
   gl_FUNC_CALLOC_POSIX
   gl_STDLIB_MODULE_INDICATOR([calloc-posix])
+  gl_FUNC_CHDIR_LONG
+  gl_FUNC_CHOWN
+  gl_UNISTD_MODULE_INDICATOR([chown])
+  gl_CLOCK_TIME
   gl_FUNC_CLOSE
   gl_UNISTD_MODULE_INDICATOR([close])
   gl_CLOSE_STREAM
   gl_MODULE_INDICATOR([close-stream])
   gl_CLOSEIN
   gl_CLOSEOUT
+  gl_CHECK_TYPE_STRUCT_DIRENT_D_INO
+  gl_DIRENT_H
+  gl_FUNC_DIRFD
+  gl_DIRENT_MODULE_INDICATOR([dirfd])
+  gl_DIRNAME_LGPL
+  gl_DOUBLE_SLASH_ROOT
   gl_FUNC_DUP2
   gl_UNISTD_MODULE_INDICATOR([dup2])
   gl_HEADER_ERRNO_H
@@ -67,11 +77,17 @@ AC_DEFUN([gl_INIT],
     [AM_][XGETTEXT_OPTION([--flag=error:3:c-format])
      AM_][XGETTEXT_OPTION([--flag=error_at_line:5:c-format])])
   gl_EXITFAIL
+  gl_FUNC_FCHDIR
+  gl_UNISTD_MODULE_INDICATOR([fchdir])
   gl_FUNC_FCLOSE
   gl_STDIO_MODULE_INDICATOR([fclose])
+  gl_FUNC_FCNTL
+  gl_FCNTL_MODULE_INDICATOR([fcntl])
   gl_FCNTL_H
   gl_FCNTL_SAFER
   gl_MODULE_INDICATOR([fcntl-safer])
+  gl_FUNC_FDOPENDIR
+  gl_DIRENT_MODULE_INDICATOR([fdopendir])
   gl_FUNC_FFLUSH
   gl_STDIO_MODULE_INDICATOR([fflush])
   gl_FLOAT_H
@@ -89,13 +105,15 @@ AC_DEFUN([gl_INIT],
   gl_STDIO_MODULE_INDICATOR([fseeko])
   gl_FUNC_FTELLO
   gl_STDIO_MODULE_INDICATOR([ftello])
+  gl_FUNC_GETCWD
+  gl_UNISTD_MODULE_INDICATOR([getcwd])
   gl_FUNC_GETOPT_GNU
   gl_MODULE_INDICATOR([getopt-gnu])
   gl_FUNC_GETOPT_POSIX
-  gl_FUNC_GETPAGESIZE
-  gl_UNISTD_MODULE_INDICATOR([getpagesize])
   AC_SUBST([LIBINTL])
   AC_SUBST([LTLIBINTL])
+  gl_GETTIME
+  gl_FUNC_GETTIMEOFDAY
   gl_GNU_MAKE
   # Autoconf 2.61a.99 and earlier don't support linking a file only
   # in VPATH builds.  But since GNUmakefile is for maintainer use
@@ -107,10 +125,13 @@ AC_DEFUN([gl_INIT],
   	m4_defn([m4_PACKAGE_VERSION])), [1], [],
         [AC_CONFIG_LINKS([$GNUmakefile:$GNUmakefile], [],
   	[GNUmakefile=$GNUmakefile])])
+  AC_REQUIRE([AC_C_INLINE])
   gl_INLINE
   gl_FUNC_ISNAND_NO_LIBM
   gl_FUNC_ISNANF_NO_LIBM
   gl_FUNC_ISNANL_NO_LIBM
+  gl_FUNC_LCHOWN
+  gl_UNISTD_MODULE_INDICATOR([lchown])
   gl_LOCALCHARSET
   LOCALCHARSET_TESTS_ENVIRONMENT="CHARSETALIASDIR=\"\$(top_builddir)/$gl_source_base\""
   AC_SUBST([LOCALCHARSET_TESTS_ENVIRONMENT])
@@ -129,10 +150,16 @@ AC_DEFUN([gl_INIT],
   gl_WCHAR_MODULE_INDICATOR([mbsinit])
   gl_FUNC_MEMCHR
   gl_STRING_MODULE_INDICATOR([memchr])
+  gl_FUNC_MEMPCPY
+  gl_STRING_MODULE_INDICATOR([mempcpy])
+  gl_FUNC_MEMRCHR
+  gl_STRING_MODULE_INDICATOR([memrchr])
+  gl_FUNC_MKDIR
   gl_MULTIARCH
   gl_FUNC_OPEN
   gl_MODULE_INDICATOR([open])
   gl_FCNTL_MODULE_INDICATOR([open])
+  gl_FUNC_OPENAT
   gl_FUNC_PERROR
   gl_STRING_MODULE_INDICATOR([perror])
   gl_FUNC_PRINTF_FREXP
@@ -145,6 +172,9 @@ AC_DEFUN([gl_INIT],
   AC_DEFINE([GNULIB_REALLOC_GNU], 1, [Define to indicate the 'realloc' module.])
   gl_FUNC_REALLOC_POSIX
   gl_STDLIB_MODULE_INDICATOR([realloc-posix])
+  gl_FUNC_RMDIR
+  gl_UNISTD_MODULE_INDICATOR([rmdir])
+  gl_SAVE_CWD
   gl_SIGNBIT
   gl_MATH_MODULE_INDICATOR([signbit])
   gl_SIZE_MAX
@@ -157,6 +187,8 @@ AC_DEFUN([gl_INIT],
   gl_STDINT_H
   gl_STDIO_H
   gl_STDLIB_H
+  gl_FUNC_STRDUP_POSIX
+  gl_STRING_MODULE_INDICATOR([strdup])
   gl_FUNC_STRERROR
   gl_STRING_MODULE_INDICATOR([strerror])
   gl_HEADER_STRING_H
@@ -165,16 +197,20 @@ AC_DEFUN([gl_INIT],
   gl_HEADER_SYS_TIME_H
   AC_PROG_MKDIR_P
   gl_HEADER_TIME_H
+  gl_TIMESPEC
   gl_UNISTD_H
   gl_UNISTD_SAFER
-  gl_MODULE_INDICATOR([unistd-safer])
+  gl_FUNC_UNLINK
+  gl_UNISTD_MODULE_INDICATOR([unlink])
   gl_UTIMENS
   gl_FUNC_VASNPRINTF
   gl_FUNC_VFPRINTF_POSIX
   gl_STDIO_MODULE_INDICATOR([vfprintf-posix])
+  AC_SUBST([WARN_CFLAGS])
   gl_WCHAR_H
   gl_WCTYPE_H
   gl_XALLOC
+  gl_XGETCWD
   gl_XSIZE
   gl_YESNO
   m4_ifval(gl_LIBSOURCES_LIST, [
@@ -199,7 +235,7 @@ AC_DEFUN([gl_INIT],
     if test -n "$gl_LIBOBJS"; then
       # Remove the extension.
       sed_drop_objext='s/\.o$//;s/\.obj$//'
-      for i in `for i in $gl_LIBOBJS; do echo "$i"; done | sed "$sed_drop_objext" | sort | uniq`; do
+      for i in `for i in $gl_LIBOBJS; do echo "$i"; done | sed -e "$sed_drop_objext" | sort | uniq`; do
         gl_libobjs="$gl_libobjs $i.$ac_objext"
         gl_ltlibobjs="$gl_ltlibobjs $i.lo"
       done
@@ -238,7 +274,7 @@ AC_DEFUN([gl_INIT],
     if test -n "$gltests_LIBOBJS"; then
       # Remove the extension.
       sed_drop_objext='s/\.o$//;s/\.obj$//'
-      for i in `for i in $gltests_LIBOBJS; do echo "$i"; done | sed "$sed_drop_objext" | sort | uniq`; do
+      for i in `for i in $gltests_LIBOBJS; do echo "$i"; done | sed -e "$sed_drop_objext" | sort | uniq`; do
         gltests_libobjs="$gltests_libobjs $i.$ac_objext"
         gltests_ltlibobjs="$gltests_ltlibobjs $i.lo"
       done
@@ -310,17 +346,27 @@ AC_DEFUN([gltests_LIBSOURCES], [
 # gnulib-tool and may be removed by future gnulib-tool invocations.
 AC_DEFUN([gl_FILE_LIST], [
   build-aux/announce-gen
+  build-aux/arg-nonnull.h
+  build-aux/gendocs.sh
   build-aux/git-version-gen
   build-aux/gitlog-to-changelog
+  build-aux/gnu-web-doc-update
   build-aux/gnupload
   build-aux/link-warning.h
   build-aux/update-copyright
   build-aux/useless-if-before-free
   build-aux/vc-list-files
+  build-aux/warn-on-use.h
   doc/fdl.texi
+  doc/gendocs_template
   lib/alloca.in.h
   lib/asnprintf.c
+  lib/at-func.c
+  lib/basename-lgpl.c
   lib/calloc.c
+  lib/chdir-long.c
+  lib/chdir-long.h
+  lib/chown.c
   lib/close-hook.c
   lib/close-hook.h
   lib/close-stream.c
@@ -332,6 +378,10 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/closeout.h
   lib/config.charset
   lib/creat-safer.c
+  lib/dirent.in.h
+  lib/dirfd.c
+  lib/dirname-lgpl.c
+  lib/dirname.h
   lib/dup-safer.c
   lib/dup2.c
   lib/errno.in.h
@@ -339,11 +389,17 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/error.h
   lib/exitfail.c
   lib/exitfail.h
+  lib/fchdir.c
+  lib/fchmodat.c
+  lib/fchown-stub.c
+  lib/fchownat.c
   lib/fclose.c
   lib/fcntl--.h
   lib/fcntl-safer.h
+  lib/fcntl.c
   lib/fcntl.in.h
   lib/fd-safer.c
+  lib/fdopendir.c
   lib/fflush.c
   lib/float+.h
   lib/float.in.h
@@ -361,13 +417,17 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/fseeko.c
   lib/fseterr.c
   lib/fseterr.h
+  lib/fstatat.c
   lib/ftello.c
+  lib/getcwd.c
   lib/getopt.c
   lib/getopt.in.h
   lib/getopt1.c
   lib/getopt_int.h
-  lib/getpagesize.c
   lib/gettext.h
+  lib/gettime.c
+  lib/gettimeofday.c
+  lib/ignore-value.h
   lib/intprops.h
   lib/isnan.c
   lib/isnand-nolibm.h
@@ -376,6 +436,7 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/isnanf.c
   lib/isnanl-nolibm.h
   lib/isnanl.c
+  lib/lchown.c
   lib/localcharset.c
   lib/localcharset.h
   lib/lseek.c
@@ -386,8 +447,17 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/mbsinit.c
   lib/memchr.c
   lib/memchr.valgrind
+  lib/mempcpy.c
+  lib/memrchr.c
+  lib/mkdir.c
+  lib/mkdirat.c
   lib/open-safer.c
   lib/open.c
+  lib/openat-die.c
+  lib/openat-priv.h
+  lib/openat-proc.c
+  lib/openat.c
+  lib/openat.h
   lib/perror.c
   lib/pipe-safer.c
   lib/printf-args.c
@@ -404,6 +474,10 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/realloc.c
   lib/ref-add.sin
   lib/ref-del.sin
+  lib/rmdir.c
+  lib/same-inode.h
+  lib/save-cwd.c
+  lib/save-cwd.h
   lib/signbitd.c
   lib/signbitf.c
   lib/signbitl.c
@@ -417,15 +491,20 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/stdio-write.c
   lib/stdio.in.h
   lib/stdlib.in.h
+  lib/strdup.c
   lib/streq.h
   lib/strerror.c
   lib/string.in.h
+  lib/stripslash.c
   lib/sys_stat.in.h
   lib/sys_time.in.h
   lib/time.in.h
+  lib/timespec.h
   lib/unistd--.h
   lib/unistd-safer.h
   lib/unistd.in.h
+  lib/unlink.c
+  lib/unlinkat.c
   lib/utimens.c
   lib/utimens.h
   lib/vasnprintf.c
@@ -436,6 +515,8 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/wctype.in.h
   lib/xalloc-die.c
   lib/xalloc.h
+  lib/xgetcwd.c
+  lib/xgetcwd.h
   lib/xmalloc.c
   lib/xsize.h
   lib/yesno.c
@@ -443,12 +524,20 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/00gnulib.m4
   m4/alloca.m4
   m4/calloc.m4
+  m4/chdir-long.m4
+  m4/chown.m4
+  m4/clock_time.m4
   m4/close-stream.m4
   m4/close.m4
   m4/closein.m4
   m4/closeout.m4
   m4/codeset.m4
+  m4/d-ino.m4
+  m4/dirent_h.m4
+  m4/dirfd.m4
+  m4/dirname.m4
   m4/dos.m4
+  m4/double-slash-root.m4
   m4/dup2.m4
   m4/errno_h.m4
   m4/error.m4
@@ -457,9 +546,13 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/exponentf.m4
   m4/exponentl.m4
   m4/extensions.m4
+  m4/fchdir.m4
   m4/fclose.m4
+  m4/fcntl-o.m4
   m4/fcntl-safer.m4
+  m4/fcntl.m4
   m4/fcntl_h.m4
+  m4/fdopendir.m4
   m4/fflush.m4
   m4/float_h.m4
   m4/fpending.m4
@@ -471,8 +564,12 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/frexpl.m4
   m4/fseeko.m4
   m4/ftello.m4
+  m4/getcwd-abort-bug.m4
+  m4/getcwd-path-max.m4
+  m4/getcwd.m4
   m4/getopt.m4
-  m4/getpagesize.m4
+  m4/gettime.m4
+  m4/gettimeofday.m4
   m4/glibc21.m4
   m4/gnu-make.m4
   m4/gnulib-common.m4
@@ -483,6 +580,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/isnand.m4
   m4/isnanf.m4
   m4/isnanl.m4
+  m4/lchown.m4
   m4/ldexpl.m4
   m4/localcharset.m4
   m4/locale-fr.m4
@@ -492,16 +590,21 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/lseek.m4
   m4/lstat.m4
   m4/malloc.m4
+  m4/manywarnings.m4
   m4/math_h.m4
   m4/mbrtowc.m4
   m4/mbsinit.m4
   m4/mbstate_t.m4
   m4/memchr.m4
+  m4/mempcpy.m4
+  m4/memrchr.m4
+  m4/mkdir.m4
   m4/mmap-anon.m4
   m4/mode_t.m4
   m4/multiarch.m4
   m4/nocrash.m4
   m4/open.m4
+  m4/openat.m4
   m4/perror.m4
   m4/printf-frexp.m4
   m4/printf-frexpl.m4
@@ -509,6 +612,8 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/printf.m4
   m4/quotearg.m4
   m4/realloc.m4
+  m4/rmdir.m4
+  m4/save-cwd.m4
   m4/signbit.m4
   m4/size_max.m4
   m4/stat-time.m4
@@ -519,23 +624,29 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/stdint_h.m4
   m4/stdio_h.m4
   m4/stdlib_h.m4
+  m4/strdup.m4
   m4/strerror.m4
   m4/string_h.m4
   m4/sys_stat_h.m4
   m4/sys_time_h.m4
   m4/time_h.m4
+  m4/timespec.m4
   m4/unistd-safer.m4
   m4/unistd_h.m4
+  m4/unlink.m4
   m4/utimbuf.m4
   m4/utimens.m4
   m4/utimes.m4
   m4/vasnprintf.m4
   m4/vfprintf-posix.m4
+  m4/warn-on-use.m4
+  m4/warnings.m4
   m4/wchar.m4
   m4/wchar_t.m4
   m4/wctype.m4
   m4/wint_t.m4
   m4/xalloc.m4
+  m4/xgetcwd.m4
   m4/xsize.m4
   m4/yesno.m4
   top/GNUmakefile

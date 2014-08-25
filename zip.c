@@ -1,6 +1,6 @@
 /* zip.c -- compress files to the gzip or pkzip format
 
-   Copyright (C) 1997-1999, 2006-2007, 2009 Free Software Foundation, Inc.
+   Copyright (C) 1997-1999, 2006-2007, 2009-2010 Free Software Foundation, Inc.
    Copyright (C) 1992-1993 Jean-loup Gailly
 
    This program is free software; you can redistribute it and/or modify
@@ -24,12 +24,8 @@
 #include "gzip.h"
 #include "crypt.h"
 
-#ifdef HAVE_UNISTD_H
-#  include <unistd.h>
-#endif
-#ifdef HAVE_FCNTL_H
-#  include <fcntl.h>
-#endif
+#include <unistd.h>
+#include <fcntl.h>
 
 local ulg crc;       /* crc on uncompressed file data */
 off_t header_bytes;   /* number of bytes in gzip header */

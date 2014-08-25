@@ -1,7 +1,7 @@
 /* gzip.h -- common declarations for all gzip modules
 
-   Copyright (C) 1997-1999, 2001, 2006-2007, 2009 Free Software Foundation,
-   Inc.
+   Copyright (C) 1997-1999, 2001, 2006-2007, 2009-2010 Free Software
+   Foundation, Inc.
 
    Copyright (C) 1992-1993 Jean-loup Gailly.
 
@@ -47,20 +47,8 @@
 #include <stdio.h>
 #include <sys/types.h> /* for off_t */
 #include <time.h>
-#if defined HAVE_STRING_H || defined STDC_HEADERS
-#  include <string.h>
-#  if !defined STDC_HEADERS && defined HAVE_MEMORY_H && !defined __GNUC__
-#    include <memory.h>
-#  endif
-#  define memzero(s, n)     memset ((voidp)(s), 0, (n))
-#else
-#  include <strings.h>
-#  define strchr            index
-#  define strrchr           rindex
-#  define memcpy(d, s, n)   bcopy((s), (d), (n))
-#  define memcmp(s1, s2, n) bcmp((s1), (s2), (n))
-#  define memzero(s, n)     bzero((s), (n))
-#endif
+#include <string.h>
+#define memzero(s, n) memset ((voidp)(s), 0, (n))
 
 #ifndef RETSIGTYPE
 #  define RETSIGTYPE void
@@ -329,12 +317,12 @@ extern char *strlwr       OF((char *s));
 extern char *gzip_base_name OF((char *fname));
 extern int xunlink        OF((char *fname));
 extern void make_simple_name OF((char *name));
-extern char *add_envopt   OF((int *argcp, char ***argvp, char *env));
-extern void gzip_error    OF((char *m)) ATTRIBUTE_NORETURN;
+extern char *add_envopt   OF((int *argcp, char ***argvp, char const *env));
+extern void gzip_error    OF((char const *m)) ATTRIBUTE_NORETURN;
 extern void xalloc_die    OF((void)) ATTRIBUTE_NORETURN;
-extern void warning       OF((char *m));
-extern void read_error    OF((void));
-extern void write_error   OF((void));
+extern void warning       OF((char const *m));
+extern void read_error    OF((void)) ATTRIBUTE_NORETURN;
+extern void write_error   OF((void)) ATTRIBUTE_NORETURN;
 extern void display_ratio OF((off_t num, off_t den, FILE *file));
 extern void fprint_off    OF((FILE *, off_t, int));
 

@@ -1,10 +1,10 @@
 This is gzip.info, produced by makeinfo version 4.13 from gzip.texi.
 
-This manual is for GNU Gzip (version 1.3.13, 28 September 2009), and
+This manual is for GNU Gzip (version 1.4, 3 January 2010), and
 documents commands for compressing and decompressing data.
 
-   Copyright (C) 1998-1999, 2001-2002, 2006-2007, 2009 Free Software
-Foundation, Inc.
+   Copyright (C) 1998-1999, 2001-2002, 2006-2007, 2009-2010 Free
+Software Foundation, Inc.
 
    Copyright (C) 1992, 1993 Jean-loup Gailly
 
@@ -37,11 +37,11 @@ File: gzip.info,  Node: Top,  Next: Overview,  Up: (dir)
 GNU Gzip: General file (de)compression
 **************************************
 
-This manual is for GNU Gzip (version 1.3.13, 28 September 2009), and
+This manual is for GNU Gzip (version 1.4, 3 January 2010), and
 documents commands for compressing and decompressing data.
 
-   Copyright (C) 1998-1999, 2001-2002, 2006-2007, 2009 Free Software
-Foundation, Inc.
+   Copyright (C) 1998-1999, 2001-2002, 2006-2007, 2009-2010 Free
+Software Foundation, Inc.
 
    Copyright (C) 1992, 1993 Jean-loup Gailly
 
@@ -969,15 +969,15 @@ Appendix B Concept index
 
 
 Tag Table:
-Node: Top1473
-Node: Overview2685
-Node: Sample7893
-Node: Invoking gzip9829
-Node: Advanced usage14821
-Node: Environment16408
-Node: Tapes16973
-Node: Problems17990
-Node: GNU Free Documentation License18460
-Node: Concept index43628
+Node: Top1472
+Node: Overview2683
+Node: Sample7891
+Node: Invoking gzip9827
+Node: Advanced usage14819
+Node: Environment16406
+Node: Tapes16971
+Node: Problems17988
+Node: GNU Free Documentation License18458
+Node: Concept index43626
 
 End Tag Table

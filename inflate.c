@@ -1,6 +1,7 @@
 /* Inflate deflated data
 
-   Copyright (C) 1997-1999, 2002, 2006, 2009 Free Software Foundation, Inc.
+   Copyright (C) 1997-1999, 2002, 2006, 2009-2010 Free Software Foundation,
+   Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -117,9 +118,7 @@
 #include <config.h>
 #include "tailor.h"
 
-#if defined STDC_HEADERS || defined HAVE_STDLIB_H
-#  include <stdlib.h>
-#endif
+#include <stdlib.h>
 
 #include "gzip.h"
 #define slide window
@@ -590,7 +589,8 @@ int bl, bd;             /* number of bits decoded by tl[] and td[] */
       do {
         n -= (e = (e = WSIZE - ((d &= WSIZE-1) > w ? d : w)) > n ? n : e);
 #if !defined(NOMEMCPY) && !defined(DEBUG)
-        if (w - d >= e)         /* (this test assumes unsigned comparison) */
+        unsigned int delta = w > d ? w - d : d - w;
+        if (delta >= e)
         {
           memcpy(slide + w, slide + d, e);
           w += e;

@@ -1,6 +1,7 @@
 /* tailor.h -- target dependent definitions
 
-   Copyright (C) 1997-1999, 2002, 2006, 2009 Free Software Foundation, Inc.
+   Copyright (C) 1997-1999, 2002, 2006, 2009-2010 Free Software Foundation,
+   Inc.
    Copyright (C) 1992-1993 Jean-loup Gailly
 
    This program is free software; you can redistribute it and/or modify
@@ -200,11 +201,6 @@
 #endif
 
 #if defined(ATARI) || defined(atarist)
-#  ifndef STDC_HEADERS
-#    define STDC_HEADERS
-#    define HAVE_UNISTD_H
-#    define HAVE_DIRENT_H
-#  endif
 #  define ASMV
 #  define OS_CODE  0x05
 #  ifdef TOSFS

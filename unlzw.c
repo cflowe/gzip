@@ -10,12 +10,8 @@
 #include <config.h>
 #include "tailor.h"
 
-#ifdef HAVE_UNISTD_H
-#  include <unistd.h>
-#endif
-#ifdef HAVE_FCNTL_H
-#  include <fcntl.h>
-#endif
+#include <unistd.h>
+#include <fcntl.h>
 
 #include "gzip.h"
 #include "lzw.h"
@@ -244,7 +240,8 @@ int unlzw(in, out)
 	int  o;
 
     resetbuf:
-	e = insize-(o = (posbits>>3));
+	o = posbits >> 3;
+	e = o <= insize ? insize - o : 0;
 
 	for (i = 0 ; i < e ; ++i) {
 	    inbuf[i] = inbuf[i+o];

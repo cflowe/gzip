@@ -1,6 +1,6 @@
 /* unzip.c -- decompress files in gzip or pkzip format.
 
-   Copyright (C) 1997-1999, 2009 Free Software Foundation, Inc.
+   Copyright (C) 1997-1999, 2009-2010 Free Software Foundation, Inc.
    Copyright (C) 1992-1993 Jean-loup Gailly
 
    This program is free software; you can redistribute it and/or modify
@@ -39,7 +39,7 @@
 #define  CRPFLG 1               /*  bit for encrypted entry */
 #define  EXTFLG 8               /*  bit for extended local header */
 #define LOCHOW 8                /* offset of compression method */
-#define LOCTIM 10               /* file mod time (for decryption) */
+/* #define LOCTIM 10               UNUSED file mod time (for decryption) */
 #define LOCCRC 14               /* offset of crc */
 #define LOCSIZ 18               /* offset of compressed size */
 #define LOCLEN 22               /* offset of uncompressed length */

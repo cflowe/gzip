@@ -2,7 +2,7 @@
 /* DO NOT EDIT! GENERATED AUTOMATICALLY! */
 /* A substitute for ISO C99 <wchar.h>, for platforms that have issues.
 
-   Copyright (C) 2007-2009 Free Software Foundation, Inc.
+   Copyright (C) 2007-2010 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -32,9 +32,9 @@
 @PRAGMA_SYSTEM_HEADER@
 #endif
 
-#if defined __need_mbstate_t || (defined __hpux && ((defined _INTTYPES_INCLUDED && !defined strtoimax) || defined _GL_JUST_INCLUDE_SYSTEM_WCHAR_H)) || defined _GL_ALREADY_INCLUDING_WCHAR_H
+#if defined __need_mbstate_t || defined __need_wint_t || (defined __hpux && ((defined _INTTYPES_INCLUDED && !defined strtoimax) || defined _GL_JUST_INCLUDE_SYSTEM_WCHAR_H)) || defined _GL_ALREADY_INCLUDING_WCHAR_H
 /* Special invocation convention:
-   - Inside uClibc header files.
+   - Inside glibc and uClibc header files.
    - On HP-UX 11.00 we have a sequence of nested includes
      <wchar.h> -> <stdlib.h> -> <stdint.h>, and the latter includes <wchar.h>,
      once indirectly <stdint.h> -> <sys/types.h> -> <inttypes.h> -> <wchar.h>
@@ -57,10 +57,13 @@
 /* Tru64 with Desktop Toolkit C has a bug: <stdio.h> must be included before
    <wchar.h>.
    BSD/OS 4.0.1 has a bug: <stddef.h>, <stdio.h> and <time.h> must be
-   included before <wchar.h>.  */
-#include <stddef.h>
-#include <stdio.h>
-#include <time.h>
+   included before <wchar.h>.
+   But avoid namespace pollution on glibc systems.  */
+#ifndef __GLIBC__
+# include <stddef.h>
+# include <stdio.h>
+# include <time.h>
+#endif
 
 /* Include the original <wchar.h> if it exists.
    Some builds of uClibc lack it.  */
@@ -75,6 +78,8 @@
 #define _GL_WCHAR_H
 
 /* The definition of GL_LINK_WARNING is copied here.  */
+
+/* The definition of _GL_ARG_NONNULL is copied here.  */
 
 #ifdef __cplusplus
 extern "C" {
@@ -199,7 +204,8 @@ extern size_t mbrlen (const char *s, size_t n, mbstate_t *ps);
 #  define mbsrtowcs rpl_mbsrtowcs
 # endif
 # if !@HAVE_MBSRTOWCS@ || @REPLACE_MBSRTOWCS@
-extern size_t mbsrtowcs (wchar_t *dest, const char **srcp, size_t len, mbstate_t *ps);
+extern size_t mbsrtowcs (wchar_t *dest, const char **srcp, size_t len, mbstate_t *ps)
+     _GL_ARG_NONNULL ((2));
 # endif
 #elif defined GNULIB_POSIXCHECK
 # undef mbsrtowcs
@@ -217,7 +223,8 @@ extern size_t mbsrtowcs (wchar_t *dest, const char **srcp, size_t len, mbstate_t
 #  define mbsnrtowcs rpl_mbsnrtowcs
 # endif
 # if !@HAVE_MBSNRTOWCS@ || @REPLACE_MBSNRTOWCS@
-extern size_t mbsnrtowcs (wchar_t *dest, const char **srcp, size_t srclen, size_t len, mbstate_t *ps);
+extern size_t mbsnrtowcs (wchar_t *dest, const char **srcp, size_t srclen, size_t len, mbstate_t *ps)
+     _GL_ARG_NONNULL ((2));
 # endif
 #elif defined GNULIB_POSIXCHECK
 # undef mbsnrtowcs
@@ -253,7 +260,8 @@ extern size_t wcrtomb (char *s, wchar_t wc, mbstate_t *ps);
 #  define wcsrtombs rpl_wcsrtombs
 # endif
 # if !@HAVE_WCSRTOMBS@ || @REPLACE_WCSRTOMBS@
-extern size_t wcsrtombs (char *dest, const wchar_t **srcp, size_t len, mbstate_t *ps);
+extern size_t wcsrtombs (char *dest, const wchar_t **srcp, size_t len, mbstate_t *ps)
+     _GL_ARG_NONNULL ((2));
 # endif
 #elif defined GNULIB_POSIXCHECK
 # undef wcsrtombs
@@ -271,7 +279,8 @@ extern size_t wcsrtombs (char *dest, const wchar_t **srcp, size_t len, mbstate_t
 #  define wcsnrtombs rpl_wcsnrtombs
 # endif
 # if !@HAVE_WCSNRTOMBS@ || @REPLACE_WCSNRTOMBS@
-extern size_t wcsnrtombs (char *dest, const wchar_t **srcp, size_t srclen, size_t len, mbstate_t *ps);
+extern size_t wcsnrtombs (char *dest, const wchar_t **srcp, size_t srclen, size_t len, mbstate_t *ps)
+     _GL_ARG_NONNULL ((2));
 # endif
 #elif defined GNULIB_POSIXCHECK
 # undef wcsnrtombs
